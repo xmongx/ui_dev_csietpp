@@ -1,4 +1,13 @@
 <!doctype html>
+<!-- ==================================================================
+  PDA给药核对训练终端 · 页面模板（src.template.html）
+  ------------------------------------------------------------------
+  本文件提供页面骨架（body 部分）和全部样式（style 部分）。
+  app/app.js 提供全部逻辑；两者由 app/build.cjs 拼装成
+  单文件成品 ../pda-scan-terminal.html。
+  改外观（颜色/布局/图标/字号）改这里；改行为改 app.js。
+  改完执行 node app/build.cjs 重新构建。详见根目录《修改指南.md》。
+=================================================================== -->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">
@@ -6,6 +15,10 @@
 <meta name="referrer" content="no-referrer">
 <title>PDA给药核对训练终端</title>
 <style>
+/* ============ 主题变量：改配色只需要改这两块 ============
+   每个变量是一组"表面色/内容色"，--pri 是主色（按钮、选中态、分数），
+   --ok/--bad/--warn 分别是 正确/错误/提醒 三种语义色。
+   浅色主题是默认；深色主题由系统偏好自动切换，两套要成对改。 */
 :root{
   --bg:#eef2f5;--card:#ffffff;--fg:#22313f;--muted:#64798c;--line:#dce5ec;
   --pri:#0f7b5f;--pri-f:#ffffff;--ok:#177e52;--ok-bg:#e6f5ee;--bad:#c0392b;--bad-bg:#fdecea;
@@ -18,12 +31,17 @@
     --warn:#e0b25b;--warn-bg:#33290f;--shadow:none;
   }
 }
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+/* ============ 全局与布局 ============ */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent} /* 去掉手机点击时的高亮 */
 body{margin:0;font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--fg)}
+/* 顶栏（PDA 绿色横幅，固定主题色不随深浅模式变，模拟设备外观） */
 #top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;background:#12352b;color:#e8fff5}
 #top .brand{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 #top .badge{font-size:11px;font-weight:400;background:rgba(255,255,255,.18);padding:2px 8px;border-radius:999px;white-space:nowrap}
 #top .clock{font-size:13px;opacity:.85;white-space:nowrap;font-variant-numeric:tabular-nums}
+#top .ver{font-size:11px;background:rgba(255,255,255,.15);padding:1px 7px;border-radius:999px;white-space:nowrap}
+/* 内容区：最大 520px 居中（手机单手宽度），底部留出导航栏的空间 */
 .wrap{max-width:520px;margin:0 auto;padding:0 12px 92px}
 h2{font-size:17px;margin:16px 2px 4px}
 h3{font-size:15px;margin:0 0 8px}
@@ -33,9 +51,12 @@ p{margin:6px 0}
 .note{font-size:12px;color:var(--muted);line-height:1.7}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .sub{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* ============ 卡片与通用组件 ============ */
 .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin:10px 0;box-shadow:var(--shadow)}
 .order-card{width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit}
 .link{border:0;background:none;color:var(--muted);padding:8px 0 0;font-size:13px;cursor:pointer}
+/* 按钮体系：min-height 44px 保证手机上的触摸目标大小 */
 .btn{display:inline-block;border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:10px 14px;font-size:14px;min-height:44px;cursor:pointer;font-family:inherit}
 .btn.primary{background:var(--pri);color:var(--pri-f);border-color:var(--pri)}
 .btn.danger{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
@@ -45,25 +66,43 @@ p{margin:6px 0}
 .btnrow .btn{flex:1}
 .mini{font-size:12px;padding:6px 10px;min-height:32px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer;font-family:inherit}
 .cardbtns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+
+/* ============ 底部导航（四个标签页） ============ */
+/* 图标直接用 emoji：离线可用、不引入图标库；换图标改这里的 <b>emoji</b> */
 #tabs{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--line);z-index:20;max-width:520px;margin:0 auto}
 #tabs button{flex:1;padding:8px 0 max(8px,env(safe-area-inset-bottom));border:0;background:none;color:var(--muted);font-size:12px;line-height:1.3;cursor:pointer;font-family:inherit}
 #tabs button b{display:block;font-size:18px;font-weight:400}
 #tabs button.on{color:var(--pri);font-weight:600}
+
+/* ============ 表单 ============ */
+/* 输入框 font-size 必须 ≥16px，否则 iOS Safari 聚焦时会自动放大页面 */
 .inp{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);font-size:16px;font-family:inherit}
 .fld{display:block;margin:8px 0}
 .fld span{display:block;font-size:12px;color:var(--muted);margin-bottom:3px}
 .chip{display:block;width:100%;text-align:left;margin:6px 0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);min-height:44px;cursor:pointer;font-family:inherit;font-size:14px}
+/* 勾选类 chip 的选中态与锁定（必问）态 */
+.chip.on{border-color:var(--pri);color:var(--pri);font-weight:600}
+.chip.lock{opacity:.6;cursor:default}
+/* 音色设置里的滑块（语速/音调） */
+.range{width:100%;accent-color:var(--pri)}
+
+/* ============ 弹窗（底部抽屉式）与提示条 ============ */
 .mask{position:fixed;inset:0;background:rgba(8,20,28,.55);z-index:50;display:flex;align-items:flex-end;justify-content:center}
 .modal{background:var(--card);width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:14px 16px 20px;max-height:86vh;overflow:auto}
 #toastHost .toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#22313f;color:#fff;padding:8px 14px;border-radius:999px;font-size:13px;z-index:60;max-width:86vw}
+
+/* ============ 训练流程专用样式 ============ */
 .pda-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);border-bottom:1px dashed var(--line);padding-bottom:6px;margin-bottom:8px}
 .pda-order strong{font-size:16px}
+/* 机器比对结论横幅（绿=通过 / 红=阻断） */
 .banner{padding:10px 12px;border-radius:10px;margin:8px 0;font-size:14px;font-weight:600}
 .banner.ok{background:var(--ok-bg);color:var(--ok)}
 .banner.bad{background:var(--bad-bg);color:var(--bad)}
+/* 比对结果的三行明细 */
 .res-row{display:flex;gap:8px;padding:7px 0;border-bottom:1px dashed var(--line);font-size:13px;align-items:baseline}
 .res-row .k{flex:none;width:62px;color:var(--muted);font-size:12px}
 .okc{color:var(--ok)} .badc{color:var(--bad)} .warnc{color:var(--warn)}
+/* 结算页 */
 .score{font-size:34px;font-weight:700;color:var(--pri)}
 .score small{font-size:14px;color:var(--muted);font-weight:400}
 .errs{margin:6px 0 0;padding-left:18px}
@@ -71,6 +110,7 @@ p{margin:6px 0}
 .ok-text{color:var(--ok)}
 .teach{margin-top:10px;padding:10px;background:var(--warn-bg);border-radius:8px;font-size:13px;color:var(--warn);line-height:1.7}
 .ask-q,.ask-a{font-size:15px;margin:8px 0}
+/* 记录页 */
 .stats{display:flex;gap:10px;margin-top:8px}
 .stat{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
 .stat b{display:block;font-size:20px;color:var(--pri)}
@@ -79,22 +119,51 @@ p{margin:6px 0}
 .kinds i{font-style:normal;font-size:12px;background:var(--bad-bg);color:var(--bad);border-radius:999px;padding:2px 10px}
 .log-item{display:flex;justify-content:space-between;gap:8px;padding:8px 2px;border-bottom:1px dashed var(--line);font-size:13px}
 .log-item .sc{font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ============ 训练流程步骤条（当前步高亮，已完成变绿） ============ */
+.steps{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:8px 0 2px;font-size:12px}
+.steps .ar{color:var(--muted)}
+.steps .st{padding:2px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
+.steps .st.on{background:var(--pri);border-color:var(--pri);color:var(--pri-f);font-weight:600}
+.steps .st.done{color:var(--ok);border-color:var(--ok)}
+/* 反问环节：近似姓名选项网格 */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+/* 真人扮演模式的患者脚本折叠块 */
+.script{margin:6px 0;border:1px dashed var(--line);border-radius:8px;padding:6px 10px}
+.script summary{cursor:pointer;font-size:13px;color:var(--muted)}
+/* "患者说话中"的音波动画（4 根小柱交替起伏） */
+.saying{display:inline-flex;gap:3px;align-items:flex-end;height:18px;vertical-align:middle}
+.saying i{width:3px;border-radius:2px;background:var(--pri);transform-origin:bottom;animation:say .9s ease-in-out infinite}
+.saying i:nth-child(1){height:8px}
+.saying i:nth-child(2){height:16px;animation-delay:.12s}
+.saying i:nth-child(3){height:11px;animation-delay:.24s}
+.saying i:nth-child(4){height:6px;animation-delay:.36s}
+@keyframes say{0%,100%{transform:scaleY(.45)}50%{transform:scaleY(1)}}
+
+/* ============ 相机取景框 ============ */
 .camwrap{text-align:center}
 .camframe{position:relative;background:#000;border-radius:12px;overflow:hidden}
 .camframe video{width:100%;display:block;max-height:56vh;object-fit:cover}
+/* 取景框：白色四角括号 + 绿色扫描线上下往返动画 */
 .reticle{position:absolute;left:50%;top:50%;width:60%;aspect-ratio:1;transform:translate(-50%,-50%);pointer-events:none}
 .reticle i{position:absolute;left:6%;right:6%;height:2px;background:rgba(46,204,113,.95);box-shadow:0 0 8px rgba(46,204,113,.8);animation:scanline 1.6s ease-in-out infinite}
 .reticle::before,.reticle::after{content:'';position:absolute;width:18px;height:18px;border:3px solid rgba(255,255,255,.9)}
 .reticle::before{left:-3px;top:-3px;border-right:0;border-bottom:0}
 .reticle::after{right:-3px;bottom:-3px;border-left:0;border-top:0}
 @keyframes scanline{0%,100%{top:8%}50%{top:90%}}
-@media (prefers-reduced-motion:reduce){.reticle i{animation:none;top:48%}}
+/* 尊重系统"减少动态效果"设置 */
+@media (prefers-reduced-motion:reduce){.reticle i{animation:none;top:48%}.saying i{animation:none}}
+
+/* ============ 二维码预览 ============ */
 .qrbox{text-align:center}
 .qrbox svg{width:200px;height:200px}
 .qrbox .sub{margin-top:6px}
+
+/* ============ 腕带打印区（屏幕上隐藏，仅打印时显示） ============
+   打印布局：每页多张腕带条（二维码 24mm + 患者文字），虚线框便于裁剪。 */
 #printArea{display:none}
 @media print{
-  body>*{display:none !important}
+  body>*{display:none !important}          /* 打印时只显示腕带区 */
   body>#printArea{display:flex !important;flex-wrap:wrap;gap:4mm;padding:6mm}
   .wb-strip{display:flex;gap:3mm;align-items:center;border:1px dashed #555;padding:4mm;width:46%;page-break-inside:avoid;break-inside:avoid}
   .wb-strip svg{width:24mm;height:24mm;flex:none}
@@ -104,13 +173,16 @@ p{margin:6px 0}
 </style>
 </head>
 <body>
+<!-- 页面骨架：顶栏 → 视图容器（四个标签页的内容都渲染进 #view）
+     → 底部导航 → 弹窗宿主 → 提示条宿主 → 打印区（不可见） -->
 <header id="top">
   <div class="brand">🏥 PDA给药核对训练终端 <span class="badge">模拟训练 · 不用于真实临床</span></div>
-  <div class="clock" id="clock">--:--</div>
+  <div class="clock"><span id="ver"></span> <span id="clock">--:--</span></div>
 </header>
 <div class="wrap">
   <section id="view"></section>
 </div>
+<!-- 底部导航：data-act="tab" 交给 app.js 统一分发；<b> 里是图标 emoji -->
 <nav id="tabs">
   <button type="button" data-act="tab" data-tab="train"><b>📷</b>训练</button>
   <button type="button" data-act="tab" data-tab="bands"><b>🏷</b>腕带</button>
@@ -120,6 +192,7 @@ p{margin:6px 0}
 <div id="modalHost"></div>
 <div id="toastHost"></div>
 <div id="printArea"></div>
+<!-- 下面三个占位标记会被 build.cjs 替换为：二维码生成库 / 二维码识别库 / 主程序 -->
 <script>
 /**
  * Minified by jsDelivr using Terser v5.37.0.
@@ -10236,20 +10309,108 @@ function findAlignmentPattern(matrix, alignmentPatternQuads, topRight, topLeft, 
 </script>
 <script>
 'use strict';
-/* ================= 小工具 ================= */
+/* =====================================================================
+ * PDA给药核对训练终端 · 主程序（app.js）  v0.2.1
+ * -------------------------------------------------------------------
+ * 本文件包含全部业务逻辑：数据存储、腕带二维码、训练流程与评分、
+ * 反问问诊、相机扫描、四个页面的渲染、数据导入导出。
+ *
+ * 与其他文件的关系：
+ *   - src.template.html：页面骨架 + 样式（改外观去那里）
+ *   - vendor/：第三方库（qrcode-generator 生成二维码、jsQR 识别二维码），不要修改
+ *   - build.cjs：把模板、库和本文件拼装成单文件成品 ../pda-scan-terminal.html
+ *
+ * 【章节地图】想改哪类功能，搜索对应的 "=====" 分隔线直达：
+ *   常量配置      版本号、评分规则 SCORE_RULES、扫码参数……所有可调开关
+ *   小工具        $ / esc / toast 等通用函数
+ *   提示音        Web Audio 合成"滴"声
+ *   数据存储      localStorage 读写、预置数据 defaultData、自动迁移 migrateData
+ *   腕带二维码    toWrist/fromWrist（码内容格式）、qrSvg（生成 SVG）
+ *   训练流程与评分 状态机 TR.stage、机器比对 computeMachine、判断与加权算分
+ *   反问环节      问法题库 PHRASES、话语模板 DEFAULT_UTTERANCE、子流程
+ *                 enterAsk/askXxx 系列、真人扮演（live）模式
+ *   相机扫描      getUserMedia + jsQR 轮询解码
+ *   音色设置      speakLine 与「⚙ 音色」面板
+ *   页面渲染      renderTrain/Result/Ask/Bands/Orders/Logs、renderSteps
+ *   表单          患者/医嘱的新增与编辑（注意 getAttribute('id') 的教训）
+ *   打印/导入导出 buildPrintArea / exportData / importFile
+ *   事件分发      所有 data-act 动作的统一入口（加新按钮先来这里注册 case）
+ *   启动          时钟、语音预热、首屏渲染
+ *
+ * 修改本文件后：改顶部 APP_VERSION（末位+1）→ 项目根目录执行 node app/build.cjs。
+ * 修改入门见《修改指南.md》；发布流程见《部署指南.md》《github后续操作.md》。
+ *
+ * 代码风格：统一 ES5 写法（var + function 声明），兼容旧手机浏览器、便于初学阅读。
+ * ===================================================================== */
+
+/* ================= 常量配置（想调行为先看这里） ================= */
+
+var LS_KEY = 'pdaTrainData.v1'; // localStorage 的键名。注意：改名后旧数据就读不到了
+/* 程序版本号：显示在顶栏和记录页，用于确认线上/本机用的是哪一版。
+ * 约定（三段式）：每次发布把末位 +1（0.2.1 → 0.2.2 → 0.2.3 …），只改这一处。 */
+var APP_VERSION = '0.2.4';
+/* 评分规则（满分 100，按错误严重程度加权扣分，扣完为止）：
+ * 安全类错误（给药决定/身份判断/比对判断）权重高，语气流程类（提问方式）权重低，
+ * 且提问方式错误设总扣分上限——问的问题越多不该越吃亏。想调分值改这里。 */
+var SCORE_RULES = {
+  d1: 20,         // 判断1失误：机器比对后选错"继续/暂停"（安全类）
+  name: 20,       // 姓名比对判断失误（安全类，核心技能）
+  age: 15,        // 年龄比对判断失误（第二核对因子）
+  history: 15,    // 病史×用药冲突核对失误
+  decision: 25,   // 给药决定失误（最高权重：直接关系用药安全）
+  phrase: 8,      // 提问方式错误（每题，语气流程类）
+  phraseCap: 16   // 提问方式错误的 round 总扣分上限（约两题的量）
+};
+var BEEP_FREQ = 1660;          // 扫描成功提示音的频率（Hz）
+var BEEP_DUR = 0.12;           // 提示音时长（秒）
+var SCAN_INTERVAL_MS = 220;    // 相机扫码的轮询间隔（毫秒）：每 220ms 抓一帧解码
+var SCAN_MAX_WIDTH = 640;      // 解码画面的最大宽度（像素）：再大解码会变慢
+var MAX_LOGS = 500;            // 训练记录最多保留条数，超出后丢弃最早的
+var ASK_OPT_COUNT = 4;         // 反问环节每题展示的问法选项数：1 条规范 + (N-1) 条不规范
+/* ================= 过敏冲突判定（药物家族匹配） =================
+ * 不再要求"过敏史文字原样出现在药名里"（自然语句如"对青霉素类药物过敏"
+ * 旧机制无法识别），改为按药物家族匹配：
+ *   过敏史文字含家族关键词(keys) 且 医嘱药名含该家族任一代表药(drugs) → 冲突。
+ * 好处：①容忍自然表述 ②可识别交叉过敏（青霉素过敏×阿莫西林）。
+ * 想加新家族/新代表药：往 ALLERGY_FAMILIES 加一行即可。 */
+var ALLERGY_FAMILIES = [
+  { name: '青霉素类', keys: ['青霉素', '盘尼西林'], drugs: ['青霉素', '阿莫西林', '克拉维酸', '美洛西林', '哌拉西林'] },
+  { name: '头孢类', keys: ['头孢'], drugs: ['头孢'] },
+  { name: '磺胺类', keys: ['磺胺'], drugs: ['磺胺', '复方新诺明'] }
+];
+/* 既往病史 × 用药冲突规则表（病史核对确认步骤的判定依据）：
+ * 患者病史包含 hist 关键词、且医嘱药名或溶媒包含 drug 关键词即视为冲突。
+ * 想扩展规则直接往数组里加一行。 */
+var HISTORY_RISKS = [
+  { hist: '糖尿病', drug: '葡萄糖', note: '糖尿病患者应慎用葡萄糖作溶媒（必须使用时须按医嘱加胰岛素对抗）' },
+  { hist: '消化性溃疡', drug: '激素', note: '消化性溃疡患者慎用糖皮质激素类药物，可能诱发或加重出血' },
+  { hist: '肾功能', drug: '氨基糖苷', note: '肾功能不全者慎用氨基糖苷类等肾毒性药物，须评估剂量' }
+];
+
+/* ================= 小工具函数 ================= */
+
 function $(s, r) { return (r || document).querySelector(s); }
 function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+
+/* 把用户输入的内容转义后再拼进 HTML，防止 < > " ' 破坏页面结构（XSS 安全）。
+ * 渲染任何用户数据（患者姓名、过敏史等）前都必须经过 esc()。 */
 function esc(v) {
   return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
     return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
   });
 }
+
+/* 生成一个几乎不重复的 id（新建患者/医嘱时用），如 p1m3ab2c9x */
 function uid(p) { return p + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+/* 时间戳 → "10-25 14:30" 格式，用于训练记录列表 */
 function fmtTime(ts) {
   var d = new Date(ts);
   function p(n) { return n < 10 ? '0' + n : '' + n; }
   return (d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
+
+/* 顶部短暂弹出的提示条，2.6 秒后自动消失 */
 var toastTimer = null;
 function toast(msg) {
   $('#toastHost').innerHTML = '<div class="toast">' + esc(msg) + '</div>';
@@ -10257,39 +10418,79 @@ function toast(msg) {
   toastTimer = setTimeout(function () { $('#toastHost').innerHTML = ''; }, 2600);
 }
 
-/* ================= 提示音 ================= */
-var AC = null;
+/* ================= 扫描提示音（Web Audio 合成，无音频文件） ================= */
+
+var AC = null; // AudioContext 惰性创建：浏览器要求首次发声必须由用户点击触发
 function beep(freq, dur) {
   try {
     AC = AC || new (window.AudioContext || window.webkitAudioContext)();
     if (AC.state === 'suspended') AC.resume();
     var o = AC.createOscillator(), g = AC.createGain();
-    o.type = 'square';
-    o.frequency.value = freq || 1660;
+    o.type = 'square';                       // 方波更接近 PDA 的"滴"声
+    o.frequency.value = freq || BEEP_FREQ;
     g.gain.setValueAtTime(0.12, AC.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + (dur || 0.12));
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + (dur || BEEP_DUR)); // 快速衰减收尾
     o.connect(g); g.connect(AC.destination);
-    o.start(); o.stop(AC.currentTime + (dur || 0.12));
-  } catch (e) { /* 无声环境忽略 */ }
+    o.start(); o.stop(AC.currentTime + (dur || BEEP_DUR));
+  } catch (e) { /* 无声环境下忽略，不影响功能 */ }
 }
 
-/* ================= 数据存储 ================= */
-var LS_KEY = 'pdaTrainData.v1';
+/* ================= 数据存储（localStorage） =================
+ * 数据结构（JSON，随导出备份流转）：
+ *   {
+ *     ver: 版本号（数据结构版本，用于 migrateData 自动迁移）,
+ *     settings: { voiceName, rate, pitch },            // 音色等用户偏好
+ *     patients: [ 患者 ],                                // 患者字段见下
+ *     orders:   [ 医嘱 ],                                // { id, patientId, drug, dose, solvent, route, time }
+ *     logs:     [ 记录 ]                                 // { ts, orderText, scanText, score, errors:[{t,w}] }
+ *   }
+ * 患者字段：bed 床号 / name 姓名 / adm 住院号（全局唯一，核对主键）/
+ *   sex / age / allergy 过敏史 / selfReport 自述姓名（≠name 即姓名陷阱）/
+ *   selfAge 自报年龄（≠age 即年龄陷阱）/ history 既往病史（问诊+病史核对用）/
+ *   say 自定义话语（每行"姓名=…/年龄=…/过敏=…/病史=…"，留空走默认模板）。
+ * 所有数据只存在"当前设备 + 当前浏览器"，跨设备用「记录」页导出/导入备份。
+ */
+
 function defaultData() {
+  /* 预置示例（ver 2）：8 名患者 / 8 条医嘱，覆盖四类训练场景——
+   * 正常案例（o1/o3/o5/o6/o7/o8）、自述陷阱（张丽华/王芳/周桂兰：
+   * selfReport 与姓名不同，反问环节会答错名字）、过敏冲突（o2 青霉素×李强、
+   * o4 头孢呋辛×陈建国）、身份不符（扫错腕带即可构造）。
+   * history＝既往病史（分层提问"问病史"时使用）。 */
   return {
-    ver: 1,
+    ver: 8,
+    settings: {}, // 用户偏好设置（音色 voiceName / 语速 rate / 音调 pitch）
     patients: [
-      { id: 'p1', bed: '12床', name: '张丽', adm: '2026102401', sex: '女', age: '45', allergy: '无已知过敏', selfReport: '张丽' },
-      { id: 'p2', bed: '13床', name: '张丽华', adm: '2026102402', sex: '女', age: '67', allergy: '无已知过敏', selfReport: '张丽' },
-      { id: 'p3', bed: '15床', name: '李强', adm: '2026102403', sex: '男', age: '52', allergy: '青霉素（皮试阳性）', selfReport: '李强' }
+      /* say＝自定义话语（每行一条：姓名=…/年龄=…/过敏=…/病史=…，支持占位符
+       * {n}{a}{c}{h}）；留空用 DEFAULT_UTTERANCE 默认模板 */
+      { id: 'p1', bed: '12床', name: '张丽', adm: '2026102401', sex: '女', age: '45', allergy: '无已知过敏', selfReport: '张丽', history: '无特殊病史', say: '' },
+      { id: 'p2', bed: '13床', name: '张丽华', adm: '2026102402', sex: '女', age: '67', allergy: '无已知过敏', selfReport: '张丽', history: '高血压 8 年', say: '姓名=啊？你说啥？……哦，我叫{姓名}。\n年龄=啊？多大？我今年{年龄}，你说话大点声。\n病史={病史}，你再说一遍？' },
+      { id: 'p3', bed: '15床', name: '李强', adm: '2026102403', sex: '男', age: '52', allergy: '青霉素（皮试阳性）', selfReport: '李强', history: '2 型糖尿病', say: '' },
+      { id: 'p4', bed: '21床', name: '王芳', adm: '2026102404', sex: '女', age: '73', allergy: '无已知过敏', selfReport: '王芳兰', history: '冠心病，做过支架手术', say: '姓名=哎哟，我叫{姓名}呀，有什么事呀？\n年龄=我今年{年龄}咯，一年不如一年喽。' },
+      { id: 'p5', bed: '22床', name: '陈建国', adm: '2026102405', sex: '男', age: '58', allergy: '头孢类药物（皮试阳性）', selfReport: '陈建国', history: '慢性支气管炎 20 年', say: '' },
+      { id: 'p6', bed: '23床', name: '刘洋', adm: '2026102406', sex: '男', age: '22', allergy: '无已知过敏', selfReport: '刘洋', history: '急性阑尾炎术后第 1 天', say: '姓名={姓名}。\n年龄={年龄}岁。' },
+      { id: 'p7', bed: '24床', name: '赵秀英', adm: '2026102407', sex: '女', age: '66', allergy: '无已知过敏', selfReport: '赵秀英', history: '2 型糖尿病 12 年', say: '' },
+      { id: 'p8', bed: '25床', name: '周桂兰', adm: '2026102408', sex: '女', age: '81', allergy: '无已知过敏', selfReport: '周桂英', selfAge: '79', history: '脑梗死后遗症，右腿乏力', say: '姓名=哎哟，我叫{姓名}呀，有什么事呀？\n年龄=我今年{年龄}咯，眼瞅着一年不如一年喽。\n病史=老毛病咯，{病史}，唉。' }
     ],
     orders: [
+      /* 精简为 5 例最具教学价值的预置医嘱（患者 8 人保留，可自行给他们开医嘱）：
+       * o1 正常基线 / o2 过敏冲突 / o7 姓名陷阱+角色反转 / o8 复合陷阱（姓名+年龄+话语）/ o9 病史×溶媒冲突 */
       { id: 'o1', patientId: 'p1', drug: '注射用头孢呋辛钠', dose: '0.75g', solvent: '0.9%氯化钠注射液 100ml', route: '静脉滴注', time: '09:00' },
-      { id: 'o2', patientId: 'p3', drug: '注射用青霉素钠', dose: '80万U', solvent: '0.9%氯化钠注射液 100ml', route: '静脉滴注', time: '10:00' }
+      /* o2 故意把青霉素开给青霉素过敏的李强：训练"过敏冲突必须拦截"（机器自动比对拦截） */
+      { id: 'o2', patientId: 'p3', drug: '注射用青霉素钠', dose: '80万U', solvent: '0.9%氯化钠注射液 100ml', route: '静脉滴注', time: '10:00' },
+      /* o7 让"张丽华"成为正确的医嘱患者——此时扫"张丽"的腕带反而是身份不符 */
+      { id: 'o7', patientId: 'p2', drug: '注射用血栓通', dose: '0.3g', solvent: '0.9%氯化钠注射液 250ml', route: '静脉滴注', time: '14:00' },
+      /* o8 复合陷阱：周桂兰自答"周桂英"+自报79岁，健谈老人语气 */
+      { id: 'o8', patientId: 'p8', drug: '注射用奥美拉唑钠', dose: '40mg', solvent: '0.9%氯化钠注射液 100ml', route: '静脉滴注', time: '15:00' },
+      /* o9 病史冲突：糖尿病 12 年的赵秀英，溶媒却是 5% 葡萄糖。
+       * 机器只查过敏（现实 PDA 如此），病史×用药的影响要靠护士问病史后人工识别。 */
+      { id: 'o9', patientId: 'p7', drug: '注射用丹参多酚酸盐', dose: '0.1g', solvent: '5%葡萄糖注射液 250ml', route: '静脉滴注', time: '16:00' }
     ],
     logs: []
   };
 }
+
+/* 读取本机存储；结构不完整（旧版本/损坏）时返回 null，随后回退到预置数据 */
 function loadData() {
   try {
     var raw = localStorage.getItem(LS_KEY);
@@ -10297,34 +10498,107 @@ function loadData() {
     var d = JSON.parse(raw);
     if (!d || !Array.isArray(d.patients) || !Array.isArray(d.orders)) return null;
     d.logs = Array.isArray(d.logs) ? d.logs : [];
+    /* 老版本记录里 errors 是字符串数组，统一升级为 {t, w} 结构（按旧规则折算 25 分） */
+    d.logs.forEach(function (l) {
+      if (l.errors) l.errors = l.errors.map(function (e) { return (typeof e === 'string') ? { t: e, w: 25 } : e; });
+    });
+    d.settings = (d.settings && typeof d.settings === 'object') ? d.settings : {};
+    d = migrateData(d);
     return d;
   } catch (e) { return null; }
 }
+
+/* 数据迁移：老版本存储自动补齐新增的预置患者与医嘱（不覆盖用户自建数据，
+ * 判重依据：住院号 / id 都不存在才补入，医嘱还需其患者已存在）。
+ * SEED_FIXES 用于修正预置数据的设计缺陷（如 v5 把周桂兰的同音陷阱"周贵兰"
+ * 改为发音可分辨的"周桂英"）：只修正仍等于旧值的字段，用户改过的不动。 */
+var SEED_FIXES = [
+  { adm: '2026102408', field: 'selfReport', from: '周贵兰', to: '周桂英' }
+];
+/* v8 精简预置医嘱时移除的旧案例：老数据升级时同步删除（患者保留，可自行开医嘱） */
+var DROPPED_SEED_ORDERS = ['o3', 'o4', 'o5', 'o6'];
+function migrateData(d) {
+  var def = defaultData();
+  if (d.ver === def.ver) return d;
+  var added = {};
+  /* v8 精简：移除已裁撤的预置医嘱 */
+  d.orders = d.orders.filter(function (o) { return DROPPED_SEED_ORDERS.indexOf(o.id) < 0; });
+  def.patients.forEach(function (p) {
+    var admTaken = d.patients.some(function (x) { return String(x.adm) === String(p.adm); });
+    var idTaken = d.patients.some(function (x) { return x.id === p.id; });
+    if (!admTaken && !idTaken) { d.patients.push(p); added[p.id] = true; }
+  });
+  def.orders.forEach(function (o) {
+    var idTaken = d.orders.some(function (x) { return x.id === o.id; });
+    var patientOk = added[o.patientId] || d.patients.some(function (x) { return x.id === o.patientId; });
+    if (!idTaken && patientOk) d.orders.push(o);
+  });
+  /* 回填：老数据里同住院号的预置患者缺少的新字段（只补缺失键，不覆盖已有值），
+   * 如 v3 给周桂兰补充的 selfAge（自报年龄陷阱）。 */
+  def.patients.forEach(function (sp) {
+    var hit = d.patients.filter(function (x) { return String(x.adm) === String(sp.adm); })[0];
+    if (!hit) return;
+    ['history', 'selfAge', 'say'].forEach(function (k) {
+      if (hit[k] === undefined) hit[k] = sp[k] === undefined ? '' : sp[k];
+    });
+  });
+  SEED_FIXES.forEach(function (fx) {
+    var hit = d.patients.filter(function (x) { return String(x.adm) === String(fx.adm); })[0];
+    if (hit && hit[fx.field] === fx.from) hit[fx.field] = fx.to;
+  });
+  /* v7：话语占位符统一升级为中文写法（{n}→{姓名} 等，语义等价、可重复执行），
+   * 让学生编辑时看到的是可读的占位符 */
+  d.patients.forEach(function (x) {
+    if (x.say) {
+      x.say = String(x.say)
+        .split('{n}').join('{姓名}').split('{a}').join('{年龄}')
+        .split('{c}').join('{过敏}').split('{h}').join('{病史}');
+    }
+  });
+  d.ver = def.ver;
+  return d;
+}
+
 var DB = loadData() || defaultData();
 function saveDB() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); }
-  catch (e) { toast('本机存储不可用，数据未能保存'); }
+  catch (e) { toast('本机存储不可用，数据未能保存'); } // 如 Safari 无痕模式
 }
 function findPat(id) { for (var i = 0; i < DB.patients.length; i++) if (DB.patients[i].id === id) return DB.patients[i]; return null; }
 function findOrder(id) { for (var i = 0; i < DB.orders.length; i++) if (DB.orders[i].id === id) return DB.orders[i]; return null; }
-saveDB();
+saveDB(); // 首次运行时立即落盘预置数据
 
 /* ================= 腕带二维码 ================= */
+
+/* 患者对象 → 腕带二维码里的紧凑 JSON（键名故意缩短，控制二维码密度）。
+ * t:'wb' 是类型标记，用来区分"本系统的腕带"和其他二维码。
+ * 注意：toWrist 与 fromWrist 必须成对修改，否则已打印的旧腕带会扫不出来。 */
 function toWrist(p) {
-  return { t: 'wb', adm: p.adm, bed: p.bed, nm: p.name, sx: p.sex, ag: p.age, al: p.allergy, sr: p.selfReport || p.name };
+  return { t: 'wb', adm: p.adm, bed: p.bed, nm: p.name, sx: p.sex, ag: p.age, al: p.allergy, sr: p.selfReport || p.name, sa: p.selfAge || '', hs: p.history || '', sy: p.say || '' };
 }
+
+/* 腕带 JSON → 患者对象。字段缺失时给安全的默认值。 */
 function fromWrist(o) {
   if (!o || o.t !== 'wb' || !o.adm || !o.nm) return null;
   return {
     adm: String(o.adm), bed: o.bed || '', name: o.nm, sex: o.sx || '',
-    age: String(o.ag == null ? '' : o.ag), allergy: o.al || '无已知过敏', selfReport: o.sr || o.nm
+    age: String(o.ag == null ? '' : o.ag), allergy: o.al || '无已知过敏', selfReport: o.sr || o.nm,
+    selfAge: (o.sa == null ? '' : String(o.sa)),
+    history: o.hs || '无特殊病史',
+    say: o.sy || ''
   };
 }
+
+/* 数据库里的患者 → "扫描得到"的患者（模拟扫码读出的数据形态） */
 function wristOf(p) { return fromWrist(toWrist(p)); }
+
+/* 用 qrcode-generator 生成二维码 SVG。
+ * 手动补 viewBox 是因为部分版本只输出固定 width/height，
+ * 不带 viewBox 时 CSS 缩放（打印尺寸 26mm、预览 200px）会失真。 */
 function qrSvg(text, cellSize, margin) {
   try {
-    qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8'];
-    var qr = qrcode(0, 'M');
+    qrcode.stringToBytes = qrcode.stringToBytesFuncs['UTF-8']; // 中文必须走 UTF-8 编码
+    var qr = qrcode(0, 'M');          // 0=自动选版本；'M'=中等纠错级别
     qr.addData(text, 'Byte');
     qr.make();
     var s = qr.createSvgTag(cellSize || 4, margin == null ? 2 : margin);
@@ -10336,61 +10610,514 @@ function qrSvg(text, cellSize, margin) {
   } catch (e) { return '<div class="muted small">二维码生成失败</div>'; }
 }
 
-/* ================= 训练流程 ================= */
-var TR = { orderId: null, stage: 'pick', scanned: null, machine: null, errors: [], score: 100 };
+/* ================= 训练流程与评分 =================
+ * 一轮训练是一个小状态机（TR.stage）：
+ *   pick（选医嘱）→ scan（扫描腕带）→ result（机器比对+第一次判断）
+ *     → ask（反问式核对：勾选问题（姓名必问，年龄/过敏史/病史可选）
+ *       → 逐题选问法（开放式规范／带暗示式记错）→ 问答并判断自述与医嘱是否一致
+ *       → 汇总作出给药决定）→ done（评分与讲解）
+ * 全流程可用「‹ 上一步」逐级返回；回退会撤销本轮"比对判断"类错误。
+ * 评分针对学生的人工判断，错误分三层记录：
+ *   判断1（result 环节）：机器比对后选"继续"还是"暂停"；
+ *   提问方式（ask 环节）：开放式提问才是规范，封闭式提问记错误并纠错；
+ *   听记 + 比对判断（ask 环节）：从近似姓名中点选听到的名字，再与腕带比对。
+ */
+
+var TR = { orderId: null, stage: 'pick', scanned: null, machine: null, errors: [], score: 100, ask: null, phraseDeduction: 0 };
 function resetTR(orderId) {
-  TR = { orderId: orderId || null, stage: orderId ? 'scan' : 'pick', scanned: null, machine: null, errors: [], score: 100 };
+  TR = { orderId: orderId || null, stage: orderId ? 'scan' : 'pick', scanned: null, machine: null, errors: [], score: 100, ask: null, phraseDeduction: 0 };
 }
+
+/* 从"青霉素（皮试阳性）"里提取出过敏原关键词"青霉素"；
+ * "无已知过敏"等情况返回空串（视为无过敏）。 */
 function allergyCore(al) {
   al = String(al || '').trim();
   if (!al || al.indexOf('无') === 0) return '';
   return al.split(/[（(,，;；/]/)[0].trim();
 }
+
+/* 医嘱药品是否与患者过敏史冲突（药物家族匹配，见顶部 ALLERGY_FAMILIES）。
+ * 兜底：清洗后的过敏关键词（如"庆大霉素"）直接出现在药名里也算冲突，
+ * 覆盖没建家族的自定义药物。 */
 function conflictOf(order, p) {
   if (!order || !p) return null;
+  var al = String(p.allergy || '').trim();
+  if (!al || al.indexOf('无') === 0) return null;
+  var hay = String(order.drug || '');
+  for (var i = 0; i < ALLERGY_FAMILIES.length; i++) {
+    var f = ALLERGY_FAMILIES[i];
+    var alHit = false, drugHit = false;
+    f.keys.forEach(function (k) { if (al.indexOf(k) >= 0) alHit = true; });
+    f.drugs.forEach(function (d) { if (hay.indexOf(d) >= 0) drugHit = true; });
+    if (alHit && drugHit) {
+      return { text: '患者过敏史「' + al + '」提示对' + f.name + '过敏，与医嘱药品「' + order.drug + '」冲突' };
+    }
+  }
   var a = allergyCore(p.allergy);
-  if (!a) return null;
-  if (String(order.drug).indexOf(a) >= 0) return { text: '患者过敏史「' + a + '」与医嘱药品「' + order.drug + '」冲突' };
+  if (a && hay.indexOf(a) >= 0) {
+    return { text: '患者过敏史「' + a + '」与医嘱药品「' + order.drug + '」冲突' };
+  }
   return null;
 }
+
+/* 扫描完成后由机器完成的比对（模拟真实 PDA 的自动核对）：
+ * match=住院号是否一致；conflict=过敏冲突描述；order/op=医嘱与医嘱患者。 */
 function computeMachine() {
   var order = findOrder(TR.orderId);
   var op = order ? findPat(order.patientId) : null;
   var match = !!order && !!op && !!TR.scanned && String(TR.scanned.adm) === String(op.adm);
   return { match: match, conflict: conflictOf(order, TR.scanned), order: order, op: op };
 }
+
+/* 三种"扫描"来源（相机/模拟/手动）最终都汇到这里 */
 function applyScan(p) {
   TR.scanned = p;
   TR.machine = computeMachine();
   TR.stage = 'result';
-  beep(1660, 0.12);
+  beep(BEEP_FREQ, BEEP_DUR);
   render();
 }
+
+/* 判断1：go=true 表示学生选择"核对一致，继续"。
+ * 正确答案是"一致且无冲突→继续，否则→暂停"；判断错则记一处错误。
+ * 若本应暂停，训练直接结束（不会再进入反问环节）。 */
 function chooseD1(go) {
   var m = TR.machine;
   var shouldGo = m.match && !m.conflict;
   if (go !== shouldGo) {
-    TR.errors.push(shouldGo
-      ? '核对一致却暂停给药：机器核对通过且无过敏冲突时，不应中断治疗'
-      : (!m.match
-        ? '未发现身份不符：腕带患者（' + TR.scanned.bed + ' ' + TR.scanned.name + '）与医嘱患者（' + m.op.bed + ' ' + m.op.name + '）不是同一人，必须暂停'
-        : '未处理过敏冲突：' + m.conflict.text + '，必须暂停并联系医生'));
+    TR.errors.push({
+      w: SCORE_RULES.d1,
+      t: shouldGo
+        ? '核对一致却暂停给药：机器核对通过且无过敏冲突时，不应中断治疗'
+        : (!m.match
+          ? '未发现身份不符：腕带患者（' + TR.scanned.bed + ' ' + TR.scanned.name + '）与医嘱患者（' + m.op.bed + ' ' + m.op.name + '）不是同一人，必须暂停'
+          : '未处理过敏冲突：' + m.conflict.text + '，必须暂停并联系医生')
+    });
   }
-  if (shouldGo) { TR.stage = 'ask'; } else { finishRound(); }
+  if (shouldGo) { enterAsk(); } else { finishRound(); }
   render();
 }
-function chooseD2(choice) {
-  var expected = TR.scanned.selfReport === TR.scanned.name ? 'match' : 'diff';
-  if (choice !== expected) {
-    TR.errors.push('反问式核对失误：患者自述「' + TR.scanned.selfReport + '」与腕带姓名「' + TR.scanned.name + '」' +
-      (expected === 'match' ? '本应一致，却被误判为不符' : '并不一致，未被察觉'));
+
+/* —— 反问式核对（分层提问 + 比对判断版）的子流程 ——
+ * 子步骤：choose（勾选要问的问题，姓名必问）→ method（逐题选问法：
+ * 开放式规范 / 封闭式记错误）→ listen（问答：听患者自述，判断与医嘱是否一致）
+ * → judge（汇总比对结果，作出给药决定）。 */
+
+/* ================= 反问问法题库 =================
+ * 每个问题一个条目：label 标签；open 规范问法池（每轮随机抽 1 条展示）；
+ * wrong 不规范问法池（每条带 why 讲解，每轮随机抽 ASK_OPT_COUNT-1 条展示）。
+ * 话术里可用占位符 {op.name}/{op.bed}/{op.age}，展示时填入医嘱患者信息。
+ * 修改/新增问法直接编辑本表；展示选项数改顶部常量 ASK_OPT_COUNT。 */
+var PHRASES = {
+  name: {
+    label: '姓名',
+    open: ['「请问您叫什么名字？」', '「麻烦您说一下自己的名字好吗？」'],
+    wrong: [
+      { text: '「您是{op.name}吗？」', why: '封闭式确认：念出姓名让患者点头即可，姓名相近、听力差或意识不清的患者会顺势答「是」，起不到核对作用' },
+      { text: '「您是{op.bed}的{op.name}吧？」', why: '把床号当核对依据：床号会随转床、调床变化，不能作为身份核对依据，且仍是封闭式提问' },
+      { text: '「家属，这位患者叫什么名字？」', why: '身份核对应请患者本人回答（患者能交流时）；由家属代答无法确认患者本人的身份' },
+      { text: '「{op.name}，到时间打针了，手伸一下。」', why: '呼名后直接操作，完全没有反问核对环节——这是给药差错最常见的形态' }
+    ]
+  },
+  age: {
+    label: '年龄',
+    open: ['「您今年多大年纪？」', '「您今年多大了？」'],
+    wrong: [
+      { text: '「您今年{op.age}岁了吗？」', why: '报着档案问：把要核对的信息直接说给患者听，患者顺势点头，等于没有核对' },
+      { text: '「看您身子骨像{op.age}岁左右，对吧？」', why: '恭维式暗示：患者碍于情面容易顺着回答，得不到真实信息' },
+      { text: '「记不清也没关系，档案写着{op.age}岁，没错吧？」', why: '引导式安抚：意识不清或怕给人添麻烦的患者常会应「没错」，恰恰最容易漏掉真正需要核对的人' },
+      { text: '「护士站让我跟您核对{op.age}岁，行吧？」', why: '转述档案求确认：核对变成了通知，患者即使没听清也会同意' }
+    ]
+  },
+  allergy: {
+    label: '过敏史',
+    open: ['「您有没有药物或食物过敏？」', '「您以前对什么药或食物过敏吗？」'],
+    wrong: [
+      { text: '「您没有药物过敏吧？」', why: '否定式提问：暗示患者回答「没有」，容易漏掉过敏史' },
+      { text: '「您对要用的药不过敏吧？」', why: '患者通常不了解药品成分，无从回答，问了等于没问' },
+      { text: '「上次打针没过敏，这次也不会吧？」', why: '用上一次的经历代替本次询问，过敏反应可能发生在任何一次用药' },
+      { text: '「家里人有过敏的吗？」', why: '问的是家族史，不是患者本人的过敏史，核对对象错了' }
+    ]
+  },
+  history: {
+    label: '病史',
+    open: ['「您以前得过什么大病吗？现在有没有哪里不舒服？」', '「您现在身体有什么不舒服？以前住过院吗？」'],
+    wrong: [
+      { text: '「您身体一直挺好的吧？」', why: '暗示式寒暄：患者习惯性附和「挺好」，问不出真实情况' },
+      { text: '「没有不舒服就签字了啊？」', why: '催促式收尾：赶着执行操作，患者即使有不适也不好意思再说' },
+      { text: '「上次住院的事都还记得吧？」', why: '提问模糊：没有指向具体病史与当前不适，获取不到有效信息' },
+      { text: '「病史档案里都有，我就不问了。」', why: '完全跳过问诊：档案可能不全或滞后，患者当前的不适只能靠问诊获得' }
+    ]
+  }
+};
+
+/* 把话术里的 {op.xxx} 占位符填成医嘱患者信息 */
+function fillPhrasing(t, op) {
+  return String(t)
+    .split('{op.name}').join(op.name)
+    .split('{op.bed}').join(op.bed || '')
+    .split('{op.age}').join(op.age || '');
+}
+
+/* 进入反问环节：初始化勾选、问法、判定与兜底状态 */
+function enterAsk() {
+  TR.stage = 'ask';
+  TR.ask = {
+    step: 'choose',        // choose → method → listen → judge
+    asked: { name: true, age: false, allergy: false, history: false }, // 姓名必问
+    methods: {},           // 每题已选问法的选项下标（数字）；选到不规范问法会记错误
+    optSets: {},           // 每题本轮展示的选项（进入 method 步骤时随机生成）
+    said: {},              // 已"问过"并揭示答案的问题
+    judged: {},            // 姓名/年龄/病史的比对判定：'match'（与医嘱一致/无冲突）| 'diff'
+    revealed: {},          // 各题的文字兜底开关
+    live: false,           // true＝真人扮演模式（学生扮演患者，回答由核对者录入）
+    liveAnswers: {},       // 真人模式：录入的患者回答
+    pickMark: 0            // 进入 listen 时的错误数基线（"上一步"回退比对判断错误用）
+  };
+}
+
+/* 患者口述年龄：自报年龄（selfAge，陷阱用）缺失时用档案年龄 */
+function spokenAgeOf(p) {
+  var a = parseInt(p.selfAge, 10);
+  return (a && a > 0 && a < 130) ? String(a) : String(p.age || '');
+}
+
+/* 年龄解析：合法返回数字，否则 null（choose 步骤据此决定是否提供"问年龄"） */
+function validAge(s) {
+  var a = parseInt(s, 10);
+  return (a && a > 0 && a < 130 && String(a) === String(s || '').trim()) ? a : null;
+}
+
+/* 用系统语音朗读一句话（应用「⚙ 音色」设置）。返回 false 表示环境不支持语音。 */
+function speakLine(line) {
+  try {
+    if (!window.speechSynthesis) return false;
+    var s = DB.settings || {};
+    var u = new SpeechSynthesisUtterance(line);
+    u.lang = 'zh-CN';
+    if (s.voiceName) {
+      var v = window.speechSynthesis.getVoices().filter(function (x) { return x.name === s.voiceName; })[0];
+      if (v) u.voice = v;
+    }
+    u.rate = s.rate || 0.85;                       // 语速（默认稍慢，模拟患者语速）
+    u.pitch = (s.pitch == null ? 1 : s.pitch);     // 音调（调低可模拟低沉嗓音）
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+    return true;
+  } catch (e) { return false; }
+}
+
+/* ================= 患者话语：默认模板 + 每人自定义 =================
+ * 患者档案的 say 字段（自定义话语）优先；没写的题用这里的默认模板。
+ * 两处都支持占位符：{n}=自述姓名  {a}=自报年龄  {c}=过敏原  {h}=既往病史，
+ * 占位符会自动填成该患者的当前数据（改档案不用改话语）。
+ * 想改"所有患者"的默认语气 → 改 DEFAULT_UTTERANCE；只想改某个患者 →
+ * 在该患者档案的"自定义话语"里写，格式每行一条：姓名=… / 年龄=… / 过敏=… / 病史=… */
+var DEFAULT_UTTERANCE = {
+  name: '我叫{n}。',
+  age: '我今年{a}岁。',
+  allergyYes: '我对{c}过敏。',                                    /* 有过敏史时 */
+  allergyNo: '没有药物过敏。',                                    /* 无过敏史时 */
+  historyYes: '有{h}，现在没有明显不舒服。',                       /* 有病史时 */
+  historyNo: '没什么大病，现在也没有哪里不舒服。'                  /* 无特殊病史时 */
+};
+
+/* 把自定义话语的多行文本解析成 {name/age/allergy/history: 文案} */
+function parseSay(raw) {
+  var map = { 姓名: 'name', 年龄: 'age', 过敏: 'allergy', 病史: 'history' };
+  var out = {};
+  String(raw || '').split(/\r?\n/).forEach(function (line) {
+    var m = line.match(/^\s*(姓名|年龄|过敏|病史)\s*[=＝:：]\s*(.+?)\s*$/);
+    if (m && map[m[1]]) out[map[m[1]]] = m[2];
+  });
+  return out;
+}
+
+/* 把话语模板里的占位符填成患者当前数据。
+ * 支持中文占位符 {姓名}{年龄}{过敏}{病史} 和短写 {n}{a}{c}{h}（等价）。 */
+function fillUtterance(t, p) {
+  var n = p.selfReport || p.name || '某姓名';
+  var a = spokenAgeOf(p) || '某年龄';
+  var c = allergyCore(p.allergy) || '无';
+  var h = p.history || '无特殊病史';
+  return String(t)
+    .split('{姓名}').join(n).split('{n}').join(n)
+    .split('{年龄}').join(a).split('{a}').join(a)
+    .split('{过敏}').join(c).split('{c}').join(c)
+    .split('{病史}').join(h).split('{h}').join(h);
+}
+
+/* 某患者某题的最终话语：自定义话语优先，其次默认模板。
+ * 训练时的播报（questionAnswerText）和编辑表单的实时预览共用本函数。 */
+function utteranceFor(q, p) {
+  var custom = parseSay(p.say)[q];
+  if (custom) return fillUtterance(custom, p);
+  if (q === 'name') return fillUtterance(DEFAULT_UTTERANCE.name, p);
+  if (q === 'age') return fillUtterance(DEFAULT_UTTERANCE.age, p);
+  if (q === 'allergy') return fillUtterance(allergyCore(p.allergy) ? DEFAULT_UTTERANCE.allergyYes : DEFAULT_UTTERANCE.allergyNo, p);
+  if (q === 'history') return fillUtterance((p.history && p.history.indexOf('无') !== 0) ? DEFAULT_UTTERANCE.historyYes : DEFAULT_UTTERANCE.historyNo, p);
+  return '';
+}
+
+function questionAnswerText(q) {
+  return utteranceFor(q, TR.scanned);
+}
+
+/* 病史 × 用药冲突检查：命中 HISTORY_RISKS 返回规则，否则 null */
+function historyCheck(order, p) {
+  if (!order || !p) return null;
+  var h = p.history || '';
+  if (!h || h.indexOf('无') === 0) return null;
+  var hay = String(order.drug || '') + ' ' + String(order.solvent || '');
+  for (var i = 0; i < HISTORY_RISKS.length; i++) {
+    var r = HISTORY_RISKS[i];
+    if (h.indexOf(r.hist) >= 0 && hay.indexOf(r.drug) >= 0) return r;
+  }
+  return null;
+}
+
+/* 播报某个问题的患者回答 */
+function speakQuestion(q) { return speakLine(questionAnswerText(q)); }
+
+/* ================= 音色设置（⚙ 按钮） =================
+ * 音色 = 设备已安装的语音包，程序只能"选择 + 调语速音调"，不能凭空造声音。
+ * 想加新声音要在操作系统里安装语音包，详见《修改指南.md》第八章。 */
+
+/* 本机可用的中文语音列表（部分浏览器首次调用为空，启动时已预热） */
+function zhVoices() {
+  try {
+    return (window.speechSynthesis ? window.speechSynthesis.getVoices() : [])
+      .filter(function (v) { return /^zh/i.test(v.lang); });
+  } catch (e) { return []; }
+}
+
+function openVoiceForm() {
+  var voices = zhVoices(), s = DB.settings || {};
+  var opts = voices.map(function (v) {
+    return '<option value="' + esc(v.name) + '"' + (v.name === s.voiceName ? ' selected' : '') + '>' + esc(v.name) + '（' + esc(v.lang) + '）</option>';
+  }).join('');
+  openModal('<h3>音色设置</h3>'
+    + (voices.length
+      ? '<label class="fld"><span>语音（本机已安装）</span><select class="inp" id="voiceName">'
+        + (s.voiceName ? '' : '<option value="">系统默认</option>') + opts + '</select></label>'
+      : '<p class="note badc">本机未检测到中文语音。安装方法见《修改指南.md》第八章（Windows：设置 → 时间和语言 → 语音 → 添加语音），装好后重开本页。</p>')
+    + '<label class="fld"><span>语速（' + (s.rate || 0.85) + '）</span><input type="range" class="range" id="voiceRate" min="0.5" max="1.5" step="0.05" value="' + (s.rate || 0.85) + '"></label>'
+    + '<label class="fld"><span>音调（' + (s.pitch == null ? 1 : s.pitch) + '，越小越低沉）</span><input type="range" class="range" id="voicePitch" min="0.5" max="1.5" step="0.05" value="' + (s.pitch == null ? 1 : s.pitch) + '"></label>'
+    + '<div class="btnrow"><button class="btn" type="button" data-act="voice:preview">🔊 试听</button>'
+    + '<button class="btn primary" type="button" data-act="voice:save">保存</button>'
+    + '<button class="btn ghost" type="button" data-act="modal:close">取消</button></div>'
+    + '<p class="note">音色来自设备已安装的语音包；语速放慢＋音调调低可模拟老年患者。设置保存在本机，导出备份会一并带走。</p>');
+}
+
+function saveVoiceForm() {
+  var sel = $('#voiceName'), rate = $('#voiceRate'), pitch = $('#voicePitch');
+  DB.settings = DB.settings || {};
+  if (sel) DB.settings.voiceName = sel.value;
+  if (rate) DB.settings.rate = parseFloat(rate.value);
+  if (pitch) DB.settings.pitch = parseFloat(pitch.value);
+  saveDB(); closeModal(); toast('音色设置已保存');
+}
+
+/* 用当前面板里的选择（而非已保存值）试听一句 */
+function previewVoice() {
+  try {
+    if (!window.speechSynthesis) { toast('当前环境不支持语音'); return; }
+    var sel = $('#voiceName'), rate = $('#voiceRate'), pitch = $('#voicePitch');
+    var u = new SpeechSynthesisUtterance('我叫张丽，今年四十五岁。');
+    u.lang = 'zh-CN';
+    if (sel && sel.value) {
+      var v = window.speechSynthesis.getVoices().filter(function (x) { return x.name === sel.value; })[0];
+      if (v) u.voice = v;
+    }
+    u.rate = rate ? parseFloat(rate.value) : 0.85;
+    u.pitch = pitch ? parseFloat(pitch.value) : 1;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  } catch (e) { toast('当前环境不支持语音'); }
+}
+
+/* choose 步骤：切换患者扮演方式（系统语音 / 真人扮演） */
+function askMode(v) {
+  if (!TR.ask) return;
+  TR.ask.live = (v === 'live');
+  render();
+}
+
+/* choose 步骤：勾选/取消可选问题（年龄/过敏史/病史），姓名固定必问 */
+function askToggle(q) {
+  if (!TR.ask || q === 'name') return;
+  TR.ask.asked[q] = !TR.ask.asked[q];
+  render();
+}
+
+/* choose 步骤的"下一步"：为每题随机生成选项组（1 条规范 + N-1 条不规范，乱序，
+ * 不带对错标记），再进入逐题选问法 */
+function askToMethod() {
+  var a = TR.ask, op = TR.machine.op;
+  a.optSets = {};
+  Object.keys(PHRASES).forEach(function (q) {
+    if (!a.asked[q]) return;
+    var opens = PHRASES[q].open, wrongs = PHRASES[q].wrong;
+    var opts = [{ text: opens[Math.floor(Math.random() * opens.length)], why: '' }]
+      .concat(wrongs.slice().sort(function () { return Math.random() - 0.5; }).slice(0, ASK_OPT_COUNT - 1));
+    a.optSets[q] = opts.sort(function () { return Math.random() - 0.5; })
+      .map(function (o, i) { return { idx: i, text: fillPhrasing(o.text, op), ok: !o.why, why: o.why }; });
+  });
+  a.step = 'method';
+  render();
+}
+
+/* method 步骤：为某题从随机选项里选一条问法。选到不规范的立即记错误并
+ * 给出该问法专属的讲解，后续仍按规范问法继续；每题只选一次防试探刷分。 */
+function askMethod(q, idx) {
+  var a = TR.ask, opt = a.optSets[q] && a.optSets[q][idx];
+  if (!a || !a.asked[q] || a.methods[q] != null || !opt) return;
+  a.methods[q] = idx;
+  if (!opt.ok) {
+    /* 语气流程类错误：低权重 + 轮内封顶（问得越多不应越吃亏） */
+    var w = Math.min(SCORE_RULES.phrase, Math.max(0, SCORE_RULES.phraseCap - TR.phraseDeduction));
+    TR.phraseDeduction += w;
+    TR.errors.push({
+      w: w,
+      t: '提问方式错误：「' + PHRASES[q].label + '」的问法' + opt.text + '——' + opt.why + (w === 0 ? '（本轮该项扣分已达上限，不再重复扣）' : '')
+    });
+  }
+  render();
+}
+
+/* 所有已勾选的问题都选完问法后，方可开始向患者提问 */
+function askMethodsDone() {
+  var a = TR.ask;
+  return Object.keys(a.asked).every(function (q) { return !a.asked[q] || a.methods[q] != null; });
+}
+
+/* 本题实际用于提问的话术：选了规范问法用它；选了不规范的按规范问法继续 */
+function askQText(q) {
+  var a = TR.ask, i = a.methods[q];
+  if (i != null && a.optSets[q] && a.optSets[q][i] && a.optSets[q][i].ok) return a.optSets[q][i].text;
+  return fillPhrasing(PHRASES[q].open[0], TR.machine.op);
+}
+
+/* 开始向患者提问 → listen 步骤；记下错误基线，供"上一步"回退比对判断错误 */
+function askBegin() {
+  if (!askMethodsDone()) { toast('请先为每个问题选择问法'); return; }
+  TR.ask.pickMark = TR.errors.length;
+  TR.ask.step = 'listen';
+  render();
+}
+
+/* listen 步骤：点某题的"问"按钮 → 播报患者回答 */
+function askSay(q) {
+  if (!TR.ask || !TR.ask.asked[q]) return;
+  speakQuestion(q);
+  TR.ask.said[q] = true;
+  render();
+}
+
+/* 学生实际"听到"的内容：真人模式取录入的回答，系统模式取患者口述 */
+function heardOf(q) {
+  var a = TR.ask;
+  if (a.live) {
+    var v = String(a.liveAnswers[q] || '').trim();
+    return (q === 'age') ? v.replace(/岁$/, '').trim() : v;
+  }
+  return (q === 'name') ? TR.scanned.selfReport : spokenAgeOf(TR.scanned);
+}
+
+/* 姓名/年龄/病史的比对判断。姓名年龄：听到的内容 vs 医嘱信息；
+ * 病史：患者所述病史与本次用药是否冲突（按 HISTORY_RISKS 规则判定）。 */
+function askJudgeQ(q, v) {
+  var a = TR.ask, op = TR.machine.op;
+  if (!a || !a.asked[q] || a.judged[q] || !a.said[q]) return;
+  a.judged[q] = v;
+  if (q === 'history') {
+    var risk = historyCheck(TR.machine.order, TR.scanned);
+    var expectedH = risk ? 'diff' : 'match';
+    if (v !== expectedH) {
+      TR.errors.push({
+        w: SCORE_RULES.history,
+        t: risk
+          ? '病史核对失误：患者病史与本次用药存在相互影响（' + risk.note + '），未被识别'
+          : '病史核对失误：患者病史与本次用药并无冲突，被误判为有冲突'
+      });
+    }
+  } else {
+    var spoken = heardOf(q);
+    var orderV = (q === 'name') ? op.name : String(op.age || '');
+    var expected = (spoken === orderV) ? 'match' : 'diff';
+    if (v !== expected) {
+      TR.errors.push({
+        w: (q === 'name') ? SCORE_RULES.name : SCORE_RULES.age,
+        t: '比对判断失误：「' + PHRASES[q].label + '」患者自述「' + spoken + '」与医嘱信息「' + orderV + '」'
+          + (expected === 'match' ? '一致，本可继续，却被误判为不符' : '并不一致，必须存疑核实，未被察觉')
+      });
+    }
+  }
+  askAutoAdvance();
+}
+
+/* 必要判定（姓名 + 若问了年龄/病史）完成后：若没有信息类问题，直接进入汇总；
+ * 否则显示"完成问答"按钮，允许学生继续问完信息类问题。 */
+function askComplete() {
+  var a = TR.ask;
+  return !!a.judged.name && (!a.asked.age || !!a.judged.age) && (!a.asked.history || !!a.judged.history);
+}
+function askAutoAdvance() {
+  if (!askComplete()) { render(); return; }
+  if (!TR.ask.asked.allergy && !TR.ask.asked.history) TR.ask.step = 'judge';
+  render();
+}
+
+/* listen 的"完成问答，进入汇总判定"按钮 */
+function askJudge() {
+  if (!askComplete()) { toast('请先完成姓名（和年龄）的比对判断'); return; }
+  TR.ask.step = 'judge';
+  render();
+}
+
+/* —— 全流程"上一步"——
+ * 逐级返回：judge→listen→method→choose→result→scan→pick。
+ * 回退到 listen/method 会撤销本轮"比对判断"类错误（重新听、重新判断），
+ * 但"提问方式错误"不撤销——那是已经发生的操作差错。 */
+function goBack() {
+  if (TR.stage === 'scan') { resetTR(null); }
+  else if (TR.stage === 'result') { TR.scanned = null; TR.machine = null; TR.stage = 'scan'; }
+  else if (TR.stage === 'ask' && TR.ask) {
+    var st = TR.ask.step;
+    if (st === 'choose') { TR.stage = 'result'; }
+    else if (st === 'method') { TR.ask.step = 'choose'; }
+    else if (st === 'listen' || st === 'judge') {
+      TR.errors.length = Math.min(TR.errors.length, TR.ask.pickMark);
+      TR.ask.judged = {};
+      TR.ask.said = {};
+      TR.ask.revealed = {};
+      TR.ask.step = (st === 'judge') ? 'listen' : 'method';
+    }
+  }
+  render();
+}
+
+/* 最终给药决定：按"你自己的比对判定"行动——任一因素被判为不一致就应暂停。
+ * 这考的是"行动与判断一致"，判断本身的对错已在前一步计分。 */
+function chooseD2(give) {
+  var a = TR.ask, op = TR.machine.op;
+  var anyDoubt = (a.judged.name !== 'match') || (a.asked.age && a.judged.age !== 'match') || (a.asked.history && a.judged.history !== 'match');
+  if (give === anyDoubt) {
+    TR.errors.push({
+      w: SCORE_RULES.decision,
+      t: give
+        ? '给药决定失误：已发现比对疑点仍选择给药——疑点查清前绝不能给药'
+        : '给药决定失误：各核对项比对一致时不应中断治疗'
+    });
   }
   finishRound();
   render();
 }
+
+/* 结束一轮：按错误权重加权算分（100 - Σ权重，扣完为止）、写记录并落盘。 */
 function finishRound() {
   TR.stage = 'done';
-  TR.score = Math.max(0, 100 - TR.errors.length * 25);
+  TR.score = Math.max(0, 100 - TR.errors.reduce(function (s, e) { return s + (e.w || 0); }, 0));
   var m = TR.machine;
   DB.logs.push({
     ts: Date.now(),
@@ -10399,28 +11126,48 @@ function finishRound() {
     score: TR.score,
     errors: TR.errors.slice()
   });
-  if (DB.logs.length > 500) DB.logs = DB.logs.slice(-500);
+  if (DB.logs.length > MAX_LOGS) DB.logs = DB.logs.slice(-MAX_LOGS);
   saveDB();
 }
+
+/* 结算页的"规范要点"：根据本轮实际发生的情况给出对应的教学讲解 */
 function teachNotes() {
   var m = TR.machine, n = [];
   if (m && !m.match) n.push('身份不符时的规范动作：暂停给药 → 与另一名护士双人核对腕带、床头卡、患者自述 → 确认正确患者后再执行，绝不能「差不多就给」。');
   if (m && m.conflict) n.push('过敏冲突的规范动作：暂停给药 → 立即报告医生核实医嘱 → 做好记录。护士是用药安全的最后一道防线。');
-  if (TR.scanned && TR.scanned.selfReport !== TR.scanned.name) n.push('反问式核对必须用开放式提问「请问您叫什么名字？」，而不是「您是××吗」。姓名相近（如张丽/张丽华）时尤其要听完整、再对腕带。');
+  if (TR.ask) {
+    var badQs = Object.keys(TR.ask.methods || {}).filter(function (k) {
+      var i = TR.ask.methods[k];
+      return i != null && TR.ask.optSets && TR.ask.optSets[k] && !TR.ask.optSets[k][i].ok;
+    });
+    if (badQs.length) n.push('提问规范：核对身份与病史要用开放式提问（请问您叫什么名字／您今年多大年纪），让患者自己说出答案；带暗示的问法（您是××吗／您没有××吧）在姓名相近、听力差、意识不清时常得到顺势的「是」。');
+  }
+  if (m && m.op && TR.scanned && TR.scanned.selfReport !== m.op.name) n.push('姓名比对要逐字听全：患者自述「' + TR.scanned.selfReport + '」与医嘱姓名「' + m.op.name + '」一字之差——听到最后一个字再判定。');
+  if (TR.ask && TR.ask.asked && TR.ask.asked.age && m && m.op && spokenAgeOf(TR.scanned) !== String(m.op.age)) n.push('年龄是第二核对因子：患者自报年龄与医嘱档案不符时，要警惕身份存疑（也可能只是患者记忆偏差），应暂停核实。');
+  if (TR.ask && TR.ask.asked && TR.ask.asked.history && m && m.order) {
+    var riskN = historyCheck(m.order, TR.scanned);
+    if (riskN) n.push('给药前要评估既往病史对用药的影响：' + riskN.note + '。发现冲突应暂停给药并联系医生调整。');
+  }
   return n;
 }
 
 /* ================= 相机扫描 ================= */
-var cam = { stream: null, timer: null };
+
+var cam = { stream: null, timer: null }; // 当前摄像头流与轮询定时器
+
+/* 相机可用性判断。浏览器只允许这三类环境调用摄像头：
+ *   1) https:// 网页； 2) http://localhost（本机调试）；3) 桌面版浏览器打开的本地文件。
+ * 手机打开本地文件（file://）必然失败，提前判定不可用并显示原因，
+ * 避免用户点了"扫描"按钮才报错。 */
 function cameraAvailable() {
-  // 浏览器只在 HTTPS、localhost、或桌面版浏览器打开的本地文件里允许调用相机；
-  // 手机打开本地文件必然失败，提前判定不可用并给出说明，避免点击后才报错。
   var p = location.protocol;
   var desktopFile = p === 'file:' && !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   var secureWeb = p === 'https:' || (p === 'http:' && /^(localhost|127\.0\.0\.1)$/.test(location.hostname));
   if (!desktopFile && !secureWeb) return false;
   return !!(window.jsQR && navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
 }
+
+/* 释放摄像头（省电，也让摄像头指示灯熄灭） */
 function stopCamQuiet() {
   if (cam.timer) { clearInterval(cam.timer); cam.timer = null; }
   if (cam.stream) {
@@ -10428,11 +11175,19 @@ function stopCamQuiet() {
     cam.stream = null;
   }
 }
+
+/* 关闭弹窗；若摄像头还开着则一并释放（防止从遮罩处关闭时泄漏） */
 function closeModal() { stopCamQuiet(); $('#modalHost').innerHTML = ''; }
+
+/* 打开底部弹窗。inner 是弹窗内容的 HTML。
+ * 遮罩带 data-act="mask"，点击遮罩空白处可关闭（见事件分发）。 */
 function openModal(inner) {
   stopCamQuiet();
   $('#modalHost').innerHTML = '<div class="mask" data-act="mask"><div class="modal">' + inner + '</div></div>';
 }
+
+/* 打开相机取景框：getUserMedia 拿到视频流后，每 SCAN_INTERVAL_MS 毫秒
+ * 抓一帧画到隐藏 canvas，交给 jsQR 解码；识别到腕带码即结束。 */
 function openCamera() {
   openModal('<div class="camwrap"><div class="camframe"><video id="camV" autoplay playsinline muted></video><div class="reticle"><i></i></div></div>'
     + '<p class="note">将腕带二维码对准取景框，识别成功会自动提示</p>'
@@ -10443,8 +11198,8 @@ function openCamera() {
     .then(function () {
       var canvas = document.createElement('canvas');
       cam.timer = setInterval(function () {
-        if (!video.videoWidth) return;
-        var scale = Math.min(1, 640 / video.videoWidth);
+        if (!video.videoWidth) return; // 视频还没就绪
+        var scale = Math.min(1, SCAN_MAX_WIDTH / video.videoWidth); // 缩小画面，解码更快
         var cw = Math.round(video.videoWidth * scale), ch = Math.round(video.videoHeight * scale);
         canvas.width = cw; canvas.height = ch;
         var ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -10452,13 +11207,16 @@ function openCamera() {
         var img = ctx.getImageData(0, 0, cw, ch);
         var r = jsQR(img.data, cw, ch);
         if (r && r.data) handleDecoded(r.data);
-      }, 220);
+      }, SCAN_INTERVAL_MS);
     })
     .catch(function (err) {
       closeModal();
       toast('相机不可用（' + (err && err.name ? err.name : '未知原因') + '）。手机扫码需通过 HTTPS 网址访问本程序；本地文件请改用模拟扫描，或在电脑上打开重试');
     });
 }
+
+/* 处理解码结果：支持两种内容——
+ * 1) 腕带 JSON（打印的正式腕带）；2) 纯住院号数字（手写的简易码）。 */
 function handleDecoded(text) {
   var obj = null;
   try { obj = JSON.parse(text); } catch (e) {}
@@ -10472,6 +11230,9 @@ function handleDecoded(text) {
   closeModal();
   applyScan(p);
 }
+
+/* 模拟扫描：没有相机时的替代入口。把患者列表打乱后让用户点选，
+ * 点击即视为"扫到了这个患者的腕带"。 */
 function openSim() {
   var list = DB.patients.slice().sort(function () { return Math.random() - 0.5; }).map(function (p) {
     return '<button type="button" class="chip" data-act="sim:pick" data-id="' + p.id + '"><strong>' + esc(p.bed) + '</strong> ' + esc(p.name) + ' <span class="muted small">' + esc(p.adm) + '</span></button>';
@@ -10480,6 +11241,8 @@ function openSim() {
     + (list || '<p class="muted">暂无患者，请先到「腕带」页建档。</p>')
     + '<button type="button" class="btn ghost big" data-act="modal:close">取消</button>');
 }
+
+/* 手动输入住院号：第三种扫描入口（键盘/考试场景） */
 function openManual() {
   openModal('<h3>手动输入住院号</h3><form id="manualForm">'
     + '<label class="fld"><span>住院号</span><input class="inp" id="manualAdm" inputmode="numeric" placeholder="如 2026102401" required></label>'
@@ -10487,9 +11250,17 @@ function openManual() {
     + '<button class="btn ghost" type="button" data-act="modal:close">取消</button></div></form>');
 }
 
-/* ================= 页面渲染 ================= */
-var tab = 'train';
+/* ================= 页面渲染 =================
+ * 每个 renderXxx() 负责把自己页面的 HTML 填进 #view 容器。
+ * 页面里的可点元素都带 data-act（动作名）和 data-id（目标对象 id），
+ * 由文件末尾的统一事件分发器处理——加新按钮时只需：
+ * 1) HTML 里写 data-act="xxx"；2) 分发器 switch 里加一个 case。
+ */
+
+var tab = 'train'; // 当前标签页：train / bands / orders / logs
 function setTab(t) { tab = t; render(); }
+
+/* 总渲染入口：高亮底部导航，再渲染当前标签页 */
 function render() {
   $$('#tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === tab); });
   if (tab === 'bands') renderBands();
@@ -10498,6 +11269,8 @@ function render() {
   else renderTrain();
   window.scrollTo(0, 0);
 }
+
+/* —— 训练页：按 TR.stage 状态机渲染对应环节 —— */
 function renderTrain() {
   var v = $('#view');
   var order = findOrder(TR.orderId);
@@ -10505,7 +11278,7 @@ function renderTrain() {
     resetTR(null);
     var cards = DB.orders.map(function (o) {
       var p = findPat(o.patientId);
-      if (!p) return '';
+      if (!p) return ''; // 医嘱指向的患者已被删除时跳过
       return '<button type="button" class="card order-card" data-act="order:pick" data-id="' + o.id + '">'
         + '<div class="row"><strong>' + esc(p.bed) + ' ' + esc(p.name) + '</strong><span class="muted small">' + esc(o.time || '') + '</span></div>'
         + '<div class="sub">' + esc(o.drug) + ' ' + esc(o.dose || '') + ' · ' + esc(o.route || '') + '</div></button>';
@@ -10518,7 +11291,7 @@ function renderTrain() {
   var op = findPat(order.patientId);
   if (TR.stage === 'scan') {
     var camOk = cameraAvailable();
-    v.innerHTML = '<button type="button" class="link" data-act="scan:back">‹ 重选医嘱</button>'
+    v.innerHTML = renderSteps('scan') + '<button type="button" class="link" data-act="scan:back">‹ 重选医嘱</button>'
       + '<div class="card"><div class="pda-head"><span>移动护理 · 给药核对</span><span>' + esc(order.time || '') + '</span></div>'
       + '<div class="pda-order"><div class="muted small">执行医嘱</div>'
       + '<strong>' + esc(op.bed) + ' ' + esc(op.name) + '</strong><span class="muted small">（住院号 ' + esc(op.adm) + '）</span>'
@@ -10536,6 +11309,8 @@ function renderTrain() {
   if (TR.stage === 'ask') { v.innerHTML = renderAsk(); return; }
   v.innerHTML = renderDone();
 }
+
+/* —— 扫描结果页：机器比对结论 + 判断1 —— */
 function renderResult() {
   var m = TR.machine, sc = TR.scanned;
   var bedOk = sc.bed === m.op.bed && sc.name === m.op.name;
@@ -10552,22 +11327,178 @@ function renderResult() {
     ? '<div class="banner bad">❌ 系统阻断：腕带患者与医嘱患者不是同一人</div>'
     : (m.conflict ? '<div class="banner bad">❌ 高风险警告：药品与过敏史冲突</div>'
       : '<div class="banner ok">✅ 机器核对通过：腕带患者与医嘱一致</div>');
-  return '<button type="button" class="link" data-act="scan:back">‹ 重选医嘱</button>'
+  return renderSteps('result')
+    + '<div class="row" style="align-items:center">'
+    + '<button type="button" class="link" style="padding-top:0" data-act="go:back">‹ 上一步：重新扫描</button>'
+    + '<span style="flex:1"></span>'
+    + '<button type="button" class="link" style="padding-top:0" data-act="scan:back">‹‹ 重选医嘱</button></div>'
     + '<div class="card"><div class="pda-head"><span>扫描结果 · ' + esc(sc.bed) + ' ' + esc(sc.name) + '</span></div>'
     + banner + rows
     + '<p class="note">机器完成身份与过敏比对后，下一步动作仍须由护士判断。</p>'
     + '<div class="btnrow"><button type="button" class="btn primary" data-act="d1:go">核对一致，继续反问式核对</button>'
     + '<button type="button" class="btn danger" data-act="d1:stop">存在不符／风险，暂停给药</button></div></div>';
 }
-function renderAsk() {
-  return '<button type="button" class="link" data-act="scan:back">‹ 重选医嘱</button>'
-    + '<div class="card"><div class="muted small">反问式核对（开放式提问）</div>'
-    + '<p class="ask-q">你问：「请问您叫什么名字？」</p>'
-    + '<p class="ask-a">患者答：「我叫 ' + esc(TR.scanned.selfReport) + '」</p>'
-    + '<p class="note">请将患者自述与腕带及医嘱姓名比对后作出判断：</p>'
-    + '<div class="btnrow"><button type="button" class="btn primary" data-act="d2:match">自述与腕带一致，确认给药</button>'
-    + '<button type="button" class="btn danger" data-act="d2:diff">不一致，暂停并核实身份</button></div></div>';
+
+/* 顶部步骤条：让学生随时知道自己在流程的第几步 */
+function renderSteps(cur) {
+  var steps = [['scan', '① 扫描腕带'], ['result', '② 比对判断'], ['ask', '③ 反问核对'], ['done', '④ 完成结算']];
+  var order = { scan: 0, result: 1, ask: 2, done: 3 };
+  var curIdx = order[cur] == null ? -1 : order[cur];
+  var html = '<div class="steps">';
+  steps.forEach(function (s, i) {
+    if (i > 0) html += '<span class="ar">›</span>';
+    html += '<span class="st' + (i === curIdx ? ' on' : (i < curIdx ? ' done' : '')) + '">' + s[1] + '</span>';
+  });
+  return html + '</div>';
 }
+
+/* —— 反问式核对页（分层提问 + 比对判断版，子步骤见 TR.ask.step）—— */
+function renderAsk() {
+  var a = TR.ask, sc = TR.scanned, op = TR.machine.op;
+  var head = renderSteps('ask')
+    + '<div class="row" style="align-items:center">'
+    + '<button type="button" class="link" style="padding-top:0" data-act="go:back">‹ 上一步</button>'
+    + '<span style="flex:1"></span>'
+    + '<button type="button" class="link" style="padding-top:0" data-act="scan:back">‹‹ 重选医嘱</button></div>'
+    + '<div class="card"><div class="muted small">反问式核对 · 身份核对的第二道关（床旁、给药前）</div>'
+    + '<div class="res-row"><span class="k">医嘱信息</span><span>' + esc(op.bed) + ' ' + esc(op.name) + ' · ' + esc(op.age || '年龄不详') + (op.age ? '岁' : '') + '</span></div>';
+
+  /* 步骤1：勾选要问的问题（姓名必问；其余按需），并选择患者扮演方式 */
+  if (a.step === 'choose') {
+    function chip(q, label) {
+      return '<button type="button" class="chip' + (a.asked[q] ? ' on' : '') + '" data-act="ask:toggle" data-q="' + q + '">'
+        + (a.asked[q] ? '✓ ' : '＋ ') + esc(label) + '</button>';
+    }
+    return head
+      + '<p class="ask-q" style="margin-bottom:2px">患者扮演方式：</p>'
+      + '<div class="btnrow" style="margin:0 0 6px">'
+      + '<button type="button" class="chip' + (a.live ? '' : ' on') + '" style="margin:0" data-act="ask:mode" data-v="sys">📱 系统扮演（语音回答）</button>'
+      + '<button type="button" class="chip' + (a.live ? ' on' : '') + '" style="margin:0" data-act="ask:mode" data-v="live">👥 真人扮演（同学回答，我来录入）</button></div>'
+      + '<p class="ask-q">本轮要向患者问哪些问题？（姓名必问，其余按需勾选）</p>'
+      + '<button type="button" class="chip lock" disabled>✓ 请问您叫什么名字？（必问）</button>'
+      + (validAge(sc.age) != null ? chip('age', '您今年多大年纪？（第二核对因子）') : '')
+      + chip('allergy', '您有没有药物或食物过敏？')
+      + chip('history', '有没有哪里不舒服？以前得过什么大病？（答后需确认与用药是否冲突）')
+      + '<button type="button" class="btn primary big" data-act="ask:tomethod">下一步：选择问法</button>'
+      + '<p class="note">姓名与年龄用于身份比对（计分）；过敏史为了解患者（不计分）；病史问完需确认与本次用药是否冲突（计分）。</p></div>';
+  }
+
+  /* 步骤2：逐题选择问法——每题随机 4 个选项，不带对错标记 */
+  if (a.step === 'method') {
+    var html = head + '<p class="ask-q">逐题选择你的问法（其中只有一条是规范问法，选错会记错误并讲解原因）：</p>';
+    Object.keys(PHRASES).forEach(function (q) {
+      if (!a.asked[q]) return;
+      html += '<p class="ask-q" style="margin-bottom:2px">' + esc(PHRASES[q].label) + '</p>';
+      if (a.methods[q] != null) {
+        var opt = a.optSets[q][a.methods[q]];
+        html += opt.ok
+          ? '<p class="ask-a"><span class="okc">已选：' + esc(opt.text) + '</span></p>'
+          : '<p class="ask-a"><span class="badc">已选：' + esc(opt.text) + '（不规范，已记一处错误）</span></p>'
+            + '<div class="teach" style="margin:4px 0 8px">为什么错：' + esc(opt.why) + '<br>后续将按规范问法 ' + esc(fillPhrasing(PHRASES[q].open[0], op)) + ' 继续。</div>';
+      } else {
+        html += '<div class="opts">' + a.optSets[q].map(function (o) {
+          return '<button type="button" class="chip" data-act="ask:method" data-q="' + q + '" data-idx="' + o.idx + '">' + esc(o.text) + '</button>';
+        }).join('') + '</div>';
+      }
+    });
+    html += (askMethodsDone()
+      ? '<button type="button" class="btn primary big" data-act="ask:begin">开始向患者提问</button>'
+      : '<p class="note">请为每个问题选择一种问法。</p>');
+    return html + '</div>';
+  }
+
+  /* 步骤3：问答——听患者回答（或录入真人扮演的回答），判断与医嘱是否一致 */
+  if (a.step === 'listen') {
+    var out = head;
+    var LIVE_HINTS = { name: '输入患者说出的姓名，如：张丽', age: '输入岁数数字，如：45', allergy: '输入过敏原，或"无"', history: '简述患者回答的病史，如：高血压 8 年' };
+    if (a.live) {
+      out += '<details class="script"><summary>📋 患者脚本（给扮演患者的同学看）</summary><div class="note">'
+        + '姓名→答「' + esc(sc.selfReport) + '」；'
+        + (a.asked.age ? ' 年龄→答「' + esc(spokenAgeOf(sc)) + '岁」；' : '')
+        + (a.asked.allergy ? ' 过敏→答「' + (allergyCore(sc.allergy) ? esc(allergyCore(sc.allergy)) : '无') + '」；' : '')
+        + (a.asked.history ? ' 病史→答「' + esc(sc.history || '无特殊病史') + '」' : '')
+        + '</div></details>'
+        + '<p class="note">真人扮演：请向扮演患者的同学大声提问，再把 TA 的回答录入下方，与医嘱比对。</p>';
+    }
+    ['name', 'age', 'allergy', 'history'].forEach(function (q) {
+      if (!a.asked[q]) return;
+      var isJudged = (q === 'name' || q === 'age' || q === 'history');
+      var orderV = (q === 'name') ? op.name : String(op.age || '');
+      out += '<p class="ask-q">' + (a.live ? '🗣 问：' : '🔊 问：') + esc(askQText(q)) + ' ';
+      if (!a.live) {
+        out += '<button type="button" class="mini" data-act="ask:say" data-q="' + q + '">问</button>'
+          + (a.said[q] && !a.judged[q] && (q === 'name' || q === 'age') ? ' <button type="button" class="mini" data-act="ask:reveal" data-q="' + q + '">显示文字</button>' : '');
+      }
+      out += '</p>';
+      if (!a.said[q]) {
+        out += a.live
+          ? '<form class="askLive" data-q="' + q + '"><div class="row" style="align-items:center;gap:8px;flex-wrap:wrap">'
+            + '<input class="inp" name="ans" style="flex:1;min-width:180px" placeholder="' + esc(LIVE_HINTS[q]) + '" required>'
+            + '<button class="btn primary" type="submit">录入并比对</button></div></form>'
+          : '<p class="note">点击「问」向患者提问并听回答。</p>';
+        return;
+      }
+      if (q === 'name' || q === 'age') {
+        var heard = heardOf(q);
+        if (!a.judged[q]) {
+          out += '<p class="ask-a">' + (a.live ? '录入的回答：「' + esc(heard) + '」' : '患者回答中 <span class="saying"><i></i><i></i><i></i><i></i></span>' + (a.revealed[q] ? '「' + esc(questionAnswerText(q)) + '」' : '')) + '</p>'
+            + '<div class="res-row"><span class="k">医嘱' + esc(PHRASES[q].label) + '</span><span>' + esc(orderV) + '</span></div>'
+            + '<div class="btnrow"><button type="button" class="btn primary" data-act="ask:jjudge" data-q="' + q + '" data-v="match">回答与医嘱一致</button>'
+            + '<button type="button" class="btn danger" data-act="ask:jjudge" data-q="' + q + '" data-v="diff">不一致，存疑</button></div>';
+        } else {
+          var right = ((heard === orderV) ? 'match' : 'diff') === a.judged[q];
+          out += '<p class="ask-a">患者答：「' + esc(heard) + '」 · 医嘱：' + esc(orderV) + ' · 你的判定：'
+            + (a.judged[q] === 'match' ? '一致' : '不一致')
+            + (right ? ' <span class="okc">✓</span>' : ' <span class="badc">✗（已记录）</span>') + '</p>';
+        }
+      } else if (q === 'history') {
+        var risk = historyCheck(TR.machine.order, sc);
+        var ansShown = a.live ? '录入的病史：「' + esc(String(a.liveAnswers.history || '')) + '」' : '患者答：「' + esc(questionAnswerText('history')) + '」';
+        if (!a.judged.history) {
+          out += '<p class="ask-a">' + ansShown + '</p>'
+            + '<div class="res-row"><span class="k">本次用药</span><span>' + esc(TR.machine.order.drug) + (TR.machine.order.solvent ? ' + ' + esc(TR.machine.order.solvent) : '') + '</span></div>'
+            + '<div class="btnrow"><button type="button" class="btn primary" data-act="ask:jjudge" data-q="history" data-v="match">病史与用药无冲突</button>'
+            + '<button type="button" class="btn danger" data-act="ask:jjudge" data-q="history" data-v="diff">有冲突，暂停核实</button></div>';
+        } else {
+          var expH = risk ? 'diff' : 'match';
+          out += '<p class="ask-a">' + ansShown + ' · 你的判定：' + (a.judged.history === 'match' ? '无冲突' : '有冲突')
+            + (a.judged.history === expH ? ' <span class="okc">✓</span>' : ' <span class="badc">✗（已记录）</span>') + '</p>';
+        }
+      } else {
+        out += '<p class="ask-a">' + (a.live ? '录入的回答：「' + esc(String(a.liveAnswers[q] || '')) + '」' : '患者答：「' + esc(questionAnswerText(q)) + '」') + '</p>';
+      }
+    });
+    if (askComplete()) {
+      out += '<button type="button" class="btn primary big" data-act="ask:judge">完成问答，进入汇总判定</button>';
+    } else {
+      out += '<p class="note">完成姓名（和年龄、病史）的比对判断后才能进入汇总。</p>';
+    }
+    out += '<div class="btnrow"><button type="button" class="btn ghost" data-act="ask:voice">⚙ 音色</button></div>';
+    return out + '</div>';
+  }
+
+  /* 步骤4：汇总——各题自述/医嘱/你的判定，据此作出给药决定 */
+  var sum = '';
+  [ 'name', 'age' ].forEach(function (q) {
+    if (!a.asked[q]) return;
+    var spoken = heardOf(q);
+    var orderV = (q === 'name') ? op.name : String(op.age || '');
+    sum += '<div class="res-row"><span class="k">' + esc(PHRASES[q].label) + '</span><span>自述「' + esc(spoken) + '」· 医嘱「' + esc(orderV) + '」· 判定：'
+      + (a.judged[q] === 'match' ? '一致' : '不一致') + '</span></div>';
+  });
+  if (a.asked.allergy && a.said.allergy) sum += '<div class="res-row"><span class="k">过敏自述</span><span>' + (a.live ? esc(String(a.liveAnswers.allergy || '')) : esc(questionAnswerText('allergy'))) + '</span></div>';
+  if (a.asked.history && a.judged.history) {
+    var riskS = historyCheck(TR.machine.order, sc);
+    sum += '<div class="res-row"><span class="k">病史判定</span><span>' + (a.judged.history === 'match' ? '无冲突' : '有冲突')
+      + (riskS ? '（实际存在：' + esc(riskS.note) + '）' : '') + '</span></div>';
+  }
+  return head + '<p class="ask-q">问答汇总：</p>' + sum
+    + '<p class="note">根据以上比对结果作出给药决定（行动应与你的判定一致）：</p>'
+    + '<div class="btnrow"><button type="button" class="btn primary" data-act="d2:match">核对一致，执行给药</button>'
+    + '<button type="button" class="btn danger" data-act="d2:diff">存在疑点，暂停并核实</button></div></div>';
+}
+
+/* —— 结算页：得分 + 错误清单 + 规范要点 —— */
 function renderDone() {
   var m = TR.machine;
   var perfect = TR.errors.length === 0;
@@ -10577,17 +11508,23 @@ function renderDone() {
     + '<h3 style="margin:0">' + (perfect ? '🎉 全部正确' : '发现 ' + TR.errors.length + ' 处问题') + '</h3></div>'
     + '<p class="sub">本轮：医嘱患者 ' + esc(m.op.bed) + ' ' + esc(m.op.name) + ' · 扫描腕带 ' + esc(TR.scanned.bed) + ' ' + esc(TR.scanned.name) + '</p>'
     + (perfect ? '<p class="ok-text">核对流程完全正确，成绩已记录。</p>'
-      : '<ul class="errs">' + TR.errors.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>')
+      : '<ul class="errs">' + TR.errors.map(function (e) {
+          return '<li>−' + (e.w || 0) + '分　' + esc(e.t) + '</li>';
+        }).join('') + '</ul>')
     + (notes.length ? '<div class="teach"><b>规范要点</b><br>' + notes.join('<br>') + '</div>' : '')
     + '</div>'
     + '<button type="button" class="btn primary big" data-act="again">再来一轮</button>';
 }
 
+/* —— 腕带页：患者档案列表 —— */
 function renderBands() {
   var list = DB.patients.map(function (p) {
     return '<div class="card"><div class="row"><strong>' + esc(p.bed) + ' ' + esc(p.name) + '</strong><span class="muted small">' + esc(p.adm) + '</span></div>'
       + '<div class="sub">' + esc(p.sex || '') + (p.age ? ' · ' + esc(p.age) + '岁' : '') + ' · 过敏史：' + esc(p.allergy || '无已知过敏') + '</div>'
+      + (p.history && p.history.indexOf('无') !== 0 ? '<div class="sub">病史：' + esc(p.history) + '</div>' : '')
       + (p.selfReport && p.selfReport !== p.name ? '<div class="sub warnc">自述陷阱：本患者会自答「' + esc(p.selfReport) + '」</div>' : '')
+      + (p.selfAge && p.selfAge !== p.age ? '<div class="sub warnc">年龄陷阱：本患者会自报 ' + esc(p.selfAge) + ' 岁</div>' : '')
+      + (p.say && p.say.trim() ? '<div class="sub">自定义话语 ' + Object.keys(parseSay(p.say)).length + ' 条</div>' : '')
       + '<div class="cardbtns"><button type="button" class="mini" data-act="band:qr" data-id="' + p.id + '">二维码</button>'
       + '<button type="button" class="mini" data-act="band:edit" data-id="' + p.id + '">编辑</button>'
       + '<button type="button" class="mini" data-act="band:del" data-id="' + p.id + '">删除</button></div></div>';
@@ -10598,6 +11535,8 @@ function renderBands() {
     + (list || '<p class="muted">还没有患者，点右上角「新增」建立第一条腕带档案。</p>')
     + '<p class="note">每条患者档案会生成一张专属二维码腕带；「患者自述姓名」若与姓名不同，即构成反问式核对陷阱。</p>';
 }
+
+/* —— 医嘱页：医嘱列表 —— */
 function renderOrders() {
   var list = DB.orders.map(function (o) {
     var p = findPat(o.patientId);
@@ -10613,15 +11552,24 @@ function renderOrders() {
     + (list || '<p class="muted">还没有医嘱。</p>')
     + '<p class="note">训练从医嘱开始。把「过敏患者的医嘱」配上含过敏药物的药品，即可构造过敏冲突训练案例。</p>';
 }
+
+/* —— 记录页：统计 + 记录列表 + 数据管理 —— */
 function renderLogs() {
-  var logs = DB.logs.slice().reverse();
+  var logs = DB.logs.slice().reverse(); // 最新在前
   var avg = DB.logs.length ? Math.round(DB.logs.reduce(function (s, l) { return s + (l.score || 0); }, 0) / DB.logs.length) : null;
-  var kinds = { '身份不符': 0, '过敏冲突': 0, '反问失误': 0, '错误暂停': 0 };
+  /* 按错误信息里的关键词粗分类，统计"班级易错点"（听记有误为 v2 旧记录保留） */
+  var kinds = { '身份不符': 0, '过敏冲突': 0, '提问方式错': 0, '病史核对错': 0, '比对判断错': 0, '给药决定错': 0, '听记有误': 0, '错误暂停': 0 };
   DB.logs.forEach(function (l) {
     (l.errors || []).forEach(function (e) {
-      if (e.indexOf('身份') >= 0) kinds['身份不符']++;
-      else if (e.indexOf('过敏') >= 0) kinds['过敏冲突']++;
-      else if (e.indexOf('反问') >= 0) kinds['反问失误']++;
+      var et = (typeof e === 'string') ? e : e.t;
+      if (!et) return;
+      if (et.indexOf('身份') >= 0) kinds['身份不符']++;
+      else if (et.indexOf('过敏') >= 0) kinds['过敏冲突']++;
+      else if (et.indexOf('提问方式') >= 0) kinds['提问方式错']++;
+      else if (et.indexOf('病史核对') >= 0) kinds['病史核对错']++;
+      else if (et.indexOf('比对判断') >= 0) kinds['比对判断错']++;
+      else if (et.indexOf('给药决定') >= 0) kinds['给药决定错']++;
+      else if (et.indexOf('听记') >= 0) kinds['听记有误']++;
       else kinds['错误暂停']++;
     });
   });
@@ -10641,17 +11589,32 @@ function renderLogs() {
     + '<button type="button" class="btn" data-act="data:import">导入备份</button>'
     + '<button type="button" class="btn ghost" data-act="data:clear">清空记录</button></div>'
     + '<input type="file" id="importFile" accept=".json,application/json" hidden>'
-    + '<p class="note">数据保存位置：本机浏览器的 localStorage（键名 pdaTrainData.v1），关掉浏览器也在，但换设备、清浏览器数据不会带过去。'
+    + '<p class="note">当前版本：v' + APP_VERSION + '（顶栏也有显示，反馈问题时请附上版本号）。<br>'
+    + '数据保存位置：本机浏览器的 localStorage（键名 pdaTrainData.v1），关掉浏览器也在，但换设备、清浏览器数据不会带过去。'
     + '用「导出备份」生成 JSON 文件，可在其他设备「导入备份」恢复；腕带二维码自带患者信息，任何设备扫码即读，无需同步。'
     + '注意：无痕／隐私模式下 localStorage 可能不保存。</p>';
 }
 
-/* ================= 表单 ================= */
+/* ================= 表单（腕带 / 医嘱 的新增与编辑） ================= */
+
+/* 生成一个带 label 的文本输入行，供表单弹窗复用 */
 function field(label, name, val, ph, req) {
   return '<label class="fld"><span>' + label + '</span><input class="inp" name="' + name + '" value="' + esc(val) + '" placeholder="' + esc(ph) + '"' + (req ? ' required' : '') + '></label>';
 }
+
+/* 患者表单：id 为空 = 新增，否则编辑 */
 function openBandForm(id) {
-  var p = id ? findPat(id) : { bed: '', name: '', adm: '', sex: '女', age: '', allergy: '无已知过敏', selfReport: '' };
+  var p = id ? findPat(id) : { bed: '', name: '', adm: '', sex: '女', age: '', allergy: '无已知过敏', history: '无特殊病史', selfReport: '', selfAge: '', say: '' };
+  /* 自定义话语：四个独立输入框（无格式要求），sm 用于回填已有话语 */
+  var sm = parseSay(p.say);
+  function zhPh(v) { /* 防御性转换：万一存储里还有短占位符，展示成中文写法 */
+    return String(v || '').split('{n}').join('{姓名}').split('{a}').join('{年龄}').split('{c}').join('{过敏}').split('{h}').join('{病史}');
+  }
+  function sayField(inputName, label, val, q) {
+    return '<label class="fld"><span>' + label + '（选填，留空用默认说法）</span>'
+      + '<input class="inp" name="' + inputName + '" id="' + inputName + '" value="' + esc(zhPh(val)) + '">'
+      + '<div class="note sayprev" data-q="' + q + '">将讲：「' + esc(utteranceFor(q, p)) + '」</div></label>';
+  }
   openModal('<h3>' + (id ? '编辑患者腕带' : '新增患者腕带') + '</h3><form id="bandForm"><input type="hidden" name="id" value="' + esc(id || '') + '">'
     + field('床号', 'bed', p.bed, '如 12床', true)
     + field('姓名', 'name', p.name, '', true)
@@ -10659,28 +11622,56 @@ function openBandForm(id) {
     + field('性别', 'sex', p.sex, '', false)
     + field('年龄', 'age', p.age, '', false)
     + field('过敏史', 'allergy', p.allergy, '无已知过敏 或 具体药物', false)
+    + field('既往病史', 'history', p.history, '无特殊病史 或 如 高血压 8 年', false)
     + field('患者自述姓名', 'selfReport', p.selfReport, '留空＝与姓名一致；设为不同名字＝反问陷阱', false)
+    + field('患者自报年龄', 'selfAge', p.selfAge, '留空＝与年龄一致；填不同数字＝年龄陷阱', false)
+    + '<p class="note" style="margin:10px 0 0"><b>自定义话语</b>：想让这位患者说话有个性就填下面的格子（留空的格子用默认说法）。格子里可以写 {姓名}、{年龄}、{过敏}、{病史}，保存后会自动替换成这位患者的信息。</p>'
+    + sayField('sayName', '姓名怎么说', sm.name, 'name')
+    + sayField('sayAge', '年龄怎么说', sm.age, 'age')
+    + sayField('sayAllergy', '过敏怎么说', sm.allergy, 'allergy')
+    + sayField('sayHistory', '病史怎么说', sm.history, 'history')
     + '<div class="btnrow"><button class="btn primary" type="submit">保存</button>'
     + '<button class="btn ghost" type="button" data-act="modal:close">取消</button></div></form>');
 }
+
 function saveBandForm(f) {
   var d = {};
-  ['id', 'bed', 'name', 'adm', 'sex', 'age', 'allergy', 'selfReport'].forEach(function (k) {
+  ['id', 'bed', 'name', 'adm', 'sex', 'age', 'allergy', 'history', 'selfReport', 'selfAge'].forEach(function (k) {
     d[k] = f.elements[k] ? f.elements[k].value.trim() : '';
   });
   if (!d.bed || !d.name || !d.adm) { toast('床号、姓名、住院号为必填'); return; }
-  d.selfReport = d.selfReport || d.name;
+  d.selfReport = d.selfReport || d.name; // 自述留空时默认与姓名一致（无陷阱）
+  d.selfAge = d.selfAge || d.age;        // 自报年龄留空时默认与档案年龄一致
+  if (!d.history) d.history = '无特殊病史';
+  /* 四个话语输入框 → 内部多行格式（姓名=… 等，仅作存储/二维码用途，用户无需了解） */
+  var sayParts = [];
+  [['姓名', 'sayName'], ['年龄', 'sayAge'], ['过敏', 'sayAllergy'], ['病史', 'sayHistory']].forEach(function (pair) {
+    var v = f.elements[pair[1]] ? f.elements[pair[1]].value.trim() : '';
+    if (v) sayParts.push(pair[0] + '=' + v);
+  });
+  d.say = sayParts.join('\n');
+  /* 自定义话语与判分数据的一致性提醒（不阻止保存）：话语里没包含自述姓名/年龄，
+   * 训练时"听到的"和判分依据会对不上 */
+  var sayWarn = '';
+  var sayMap = parseSay(d.say);
+  if (sayMap.name && sayMap.name.indexOf('{n}') < 0 && sayMap.name.indexOf(d.selfReport) < 0) {
+    sayWarn = '姓名话语里没有包含自述姓名「' + d.selfReport + '」，听到的内容与判分会对不上';
+  } else if (sayMap.age && sayMap.age.indexOf('{a}') < 0 && sayMap.age.indexOf(d.selfAge) < 0) {
+    sayWarn = '年龄话语里没有包含自报年龄「' + d.selfAge + '岁」，听到的内容与判分会对不上';
+  }
   var dup = DB.patients.some(function (p) { return String(p.adm) === d.adm && p.id !== d.id; });
-  if (dup) { toast('该住院号已存在，住院号必须唯一'); return; }
+  if (dup) { toast('该住院号已存在，住院号必须唯一'); return; } // 住院号是核对主键，必须唯一
   if (d.id) {
     var p = findPat(d.id);
-    ['bed', 'name', 'adm', 'sex', 'age', 'allergy', 'selfReport'].forEach(function (k) { p[k] = d[k]; });
-  } else {
+    ['bed', 'name', 'adm', 'sex', 'age', 'allergy', 'history', 'selfReport', 'selfAge', 'say'].forEach(function (k) { p[k] = d[k]; });  } else {
     d.id = uid('p');
     DB.patients.push(d);
   }
-  saveDB(); closeModal(); resetTR(null); render(); toast('已保存');
+  saveDB(); closeModal(); resetTR(null); render();
+  toast(sayWarn ? '已保存，但注意：' + sayWarn : '已保存');
 }
+
+/* 删除患者时连同其医嘱一起删，避免出现"医嘱指向不存在患者"的脏数据 */
 function delBand(id) {
   var p = findPat(id);
   if (!p) return;
@@ -10689,6 +11680,8 @@ function delBand(id) {
   DB.orders = DB.orders.filter(function (o) { return o.patientId !== id; });
   saveDB(); resetTR(null); render(); toast('已删除');
 }
+
+/* 医嘱表单：患者下拉框从现有腕带档案里选 */
 function openOrderForm(id) {
   var o = id ? findOrder(id) : null;
   var pid = o ? o.patientId : (DB.patients[0] ? DB.patients[0].id : '');
@@ -10705,6 +11698,7 @@ function openOrderForm(id) {
     + '<div class="btnrow"><button class="btn primary" type="submit">保存</button>'
     + '<button class="btn ghost" type="button" data-act="modal:close">取消</button></div></form>');
 }
+
 function saveOrderForm(f) {
   var d = {};
   ['id', 'patientId', 'drug', 'dose', 'solvent', 'route', 'time'].forEach(function (k) {
@@ -10721,12 +11715,15 @@ function saveOrderForm(f) {
   }
   saveDB(); closeModal(); resetTR(null); render(); toast('已保存');
 }
+
 function delOrder(id) {
   if (!findOrder(id)) return;
   if (!confirm('确定删除这条医嘱？')) return;
   DB.orders = DB.orders.filter(function (o) { return o.id !== id; });
   saveDB(); resetTR(null); render(); toast('已删除');
 }
+
+/* 单个患者的腕带二维码预览（投屏/对着另一台设备扫） */
 function showQr(id) {
   var p = findPat(id);
   if (!p) return;
@@ -10738,6 +11735,9 @@ function showQr(id) {
 }
 
 /* ================= 打印 / 导入导出 ================= */
+
+/* 把所有患者填进 #printArea。屏幕上看不见（display:none），
+ * 仅在 window.print() 的打印视图里显示——见模板里的 @media print 规则。 */
 function buildPrintArea() {
   $('#printArea').innerHTML = DB.patients.map(function (p) {
     return '<div class="wb-strip">' + qrSvg(JSON.stringify(toWrist(p)), 4, 2)
@@ -10746,11 +11746,14 @@ function buildPrintArea() {
       + '<span>' + esc(p.sex || '') + ' ' + esc(p.age || '') + '岁 · 过敏：' + esc(p.allergy || '无已知过敏') + '</span></div></div>';
   }).join('');
 }
+
 function doPrint() {
   if (!DB.patients.length) { toast('没有患者可打印'); return; }
   buildPrintArea();
-  setTimeout(function () { window.print(); }, 60);
+  setTimeout(function () { window.print(); }, 60); // 稍等一帧，确保打印区已渲染
 }
+
+/* 导出全部数据为 JSON 文件（浏览器下载），用于备份与跨设备迁移 */
 function exportData() {
   try {
     var blob = new Blob([JSON.stringify(DB, null, 2)], { type: 'application/json' });
@@ -10762,6 +11765,8 @@ function exportData() {
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 0);
   } catch (e) { toast('导出失败：' + (e && e.message ? e.message : '未知错误')); }
 }
+
+/* 导入备份：校验结构 → 二次确认覆盖 → 整体替换当前数据库 */
 function importFile(inp) {
   var f = inp.files && inp.files[0];
   if (!f) return;
@@ -10774,10 +11779,12 @@ function importFile(inp) {
       DB = d;
       saveDB(); resetTR(null); render(); toast('导入成功');
     } catch (e) { toast('导入失败：不是有效的备份文件'); }
-    inp.value = '';
+    inp.value = ''; // 允许下次选同一个文件
   };
   fr.readAsText(f, 'utf-8');
 }
+
+/* 只清训练记录，不动患者和医嘱 */
 function clearLogs() {
   if (!DB.logs.length) { toast('暂无记录'); return; }
   if (!confirm('确定清空全部 ' + DB.logs.length + ' 条训练记录？（不影响患者与医嘱数据）')) return;
@@ -10785,12 +11792,17 @@ function clearLogs() {
   saveDB(); render(); toast('已清空');
 }
 
-/* ================= 事件分发 ================= */
+/* ================= 事件分发（全站统一入口） =================
+ * 所有可点元素带 data-act（动作名）+ data-id（目标 id），
+ * 在 document 上监听一次 click，用 closest 找到触发者再分发。
+ * 好处：innerHTML 重渲染后不需要重新绑定事件。
+ */
 document.addEventListener('click', function (e) {
   var t = e.target.closest ? e.target.closest('[data-act]') : null;
   if (!t) return;
   var act = t.getAttribute('data-act'), id = t.getAttribute('data-id');
   switch (act) {
+    /* 导航与训练流程 */
     case 'tab': setTab(t.getAttribute('data-tab')); break;
     case 'order:pick': resetTR(id); render(); break;
     case 'scan:back': resetTR(null); render(); break;
@@ -10801,28 +11813,63 @@ document.addEventListener('click', function (e) {
     case 'd1:stop': chooseD1(false); break;
     case 'd2:match': chooseD2('match'); break;
     case 'd2:diff': chooseD2('diff'); break;
+    /* 反问式核对子流程（分层提问 + 比对判断版） */
+    case 'ask:mode': askMode(t.getAttribute('data-v')); break;
+    case 'ask:toggle': askToggle(t.getAttribute('data-q')); break;
+    case 'ask:tomethod': askToMethod(); break;
+    case 'ask:method': askMethod(t.getAttribute('data-q'), parseInt(t.getAttribute('data-idx'), 10) || 0); break;
+    case 'ask:begin': askBegin(); break;
+    case 'ask:say': askSay(t.getAttribute('data-q')); break;
+    case 'ask:reveal': TR.ask.revealed[t.getAttribute('data-q')] = true; render(); break;
+    case 'ask:jjudge': askJudgeQ(t.getAttribute('data-q'), t.getAttribute('data-v')); break;
+    case 'ask:judge': askJudge(); break;
+    case 'go:back': goBack(); break;
+    /* 音色设置 */
+    case 'ask:voice': openVoiceForm(); break;
+    case 'voice:save': saveVoiceForm(); break;
+    case 'voice:preview': previewVoice(); break;
     case 'again': resetTR(null); render(); break;
+    /* 腕带管理 */
     case 'band:new': openBandForm(null); break;
     case 'band:edit': openBandForm(id); break;
     case 'band:qr': showQr(id); break;
     case 'band:del': delBand(id); break;
     case 'bands:print': doPrint(); break;
+    /* 医嘱管理 */
     case 'order:new': openOrderForm(null); break;
     case 'order:edit': openOrderForm(id); break;
     case 'order:del': delOrder(id); break;
+    /* 数据管理 */
     case 'data:export': exportData(); break;
     case 'data:import': $('#importFile').click(); break;
     case 'data:clear': clearLogs(); break;
+    /* 弹窗与模拟扫描 */
     case 'modal:close': closeModal(); break;
     case 'sim:pick': (function () { var p = findPat(id); closeModal(); if (p) applyScan(wristOf(p)); })(); break;
-    case 'mask': if (e.target === t) closeModal(); break;
+    case 'mask': if (e.target === t) closeModal(); break; // 只有点在遮罩空白处才关闭（事件冒泡到遮罩时不算）
   }
 });
+
+/* 表单提交（submit 事件同样可以做事件委托）。
+ * 注意：必须用 getAttribute('id') 判断表单——bandForm/orderForm 里有
+ * name="id" 的隐藏控件，它会遮蔽表单原生的 id 属性（f.id 返回的是该
+ * 控件元素而非字符串），用 f.id === 'bandForm' 永远不会命中。 */
 document.addEventListener('submit', function (e) {
   var f = e.target;
-  if (f.id === 'bandForm') { e.preventDefault(); saveBandForm(f); }
-  else if (f.id === 'orderForm') { e.preventDefault(); saveOrderForm(f); }
-  else if (f.id === 'manualForm') {
+  var fid = f.getAttribute ? f.getAttribute('id') : null;
+  if (fid === 'bandForm') { e.preventDefault(); saveBandForm(f); }
+  else if (fid === 'orderForm') { e.preventDefault(); saveOrderForm(f); }
+  else if (f.className === 'askLive') {
+    /* 真人扮演：录入扮演患者的同学的回答 */
+    e.preventDefault();
+    var lq = f.getAttribute('data-q');
+    var lv = (f.elements['ans'] ? f.elements['ans'].value : '').trim();
+    if (!lv) { toast('请输入患者的回答'); return; }
+    TR.ask.liveAnswers[lq] = lv;
+    TR.ask.said[lq] = true;
+    render();
+  }
+  else if (fid === 'manualForm') {
     e.preventDefault();
     var adm = $('#manualAdm', f).value.trim();
     var hit = null;
@@ -10832,19 +11879,57 @@ document.addEventListener('submit', function (e) {
     else toast('没有找到住院号 ' + adm + '，请先在「腕带」页建档');
   }
 });
+
+/* 导入备份的文件选择框变化时触发 */
 document.addEventListener('change', function (e) {
   if (e.target && e.target.id === 'importFile') importFile(e.target);
 });
 
+/* 患者表单里"将讲"预览的实时刷新：话语输入或基础字段（姓名/年龄等）变化时重算 */
+function refreshSayPreviews(f) {
+  if (!f || !f.elements || !f.elements['name']) return;
+  var fp = {
+    name: f.elements['name'].value.trim(),
+    selfReport: (f.elements['selfReport'].value || f.elements['name'].value || '').trim(),
+    age: f.elements['age'].value.trim(),
+    selfAge: (f.elements['selfAge'].value || f.elements['age'].value || '').trim(),
+    allergy: f.elements['allergy'].value.trim(),
+    history: (f.elements['history'].value || '').trim() || '无特殊病史',
+    say: ''
+  };
+  [['sayName', 'name'], ['sayAge', 'age'], ['sayAllergy', 'allergy'], ['sayHistory', 'history']].forEach(function (pair) {
+    var pv = f.querySelector('.sayprev[data-q="' + pair[1] + '"]');
+    if (!pv) return;
+    var v = f.elements[pair[0]] ? f.elements[pair[0]].value.trim() : '';
+    pv.textContent = '将讲：「' + (v ? fillUtterance(v, fp) : utteranceFor(pair[1], fp)) + '」';
+  });
+}
+
+/* 音色设置里拖动滑块时，实时更新数值显示；患者表单里输入时刷新话语预览 */
+document.addEventListener('input', function (e) {
+  var t = e.target;
+  if (!t || !t.closest) return;
+  var fld = t.closest('label');
+  if (fld && t.id === 'voiceRate') fld.querySelector('span').textContent = '语速（' + t.value + '）';
+  if (fld && t.id === 'voicePitch') fld.querySelector('span').textContent = '音调（' + t.value + '，越小越低沉）';
+  var bf = t.closest('#bandForm');
+  if (bf && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) refreshSayPreviews(bf);
+});
+
 /* ================= 启动 ================= */
+
+/* 顶栏时钟，15 秒刷新一次（分钟级精度够用） */
 function tickClock() {
   var d = new Date();
   function p(n) { return n < 10 ? '0' + n : '' + n; }
   $('#clock').textContent = (d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  $('#ver').textContent = 'v' + APP_VERSION;
 }
 tickClock();
 setInterval(tickClock, 15000);
-render();
+/* 预热语音列表：部分浏览器首次 getVoices 为空，触发加载后才会有数据 */
+if (window.speechSynthesis) { try { window.speechSynthesis.getVoices(); } catch (e) {} }
+render(); // 首屏渲染
 
 </script>
 </body>
